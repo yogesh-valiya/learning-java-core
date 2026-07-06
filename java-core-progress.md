@@ -11,7 +11,7 @@
 ## Roadmap
 
 ### Phase 0 — Orientation (fast-track) · ~2 sessions
-- [ ] 1. Java platform & how it runs — JDK/JRE/JVM, bytecode, JIT, compile→run flow · **[H]** · classic opener Q
+- [x] 1. Java platform & how it runs — JDK/JRE/JVM, bytecode, JIT, compile→run flow · **[H]** · classic opener Q
 - [ ] 2. Syntax map for PHP devs + Maven basics — types, packages, `main`, arrays vs collections, Maven lifecycle/deps · **[L]** · fast-tracked cheat-sheet
 
 ### Phase 1 — Core language & OOP the Java way · ~6 sessions
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** —
-- **Next up:** Module 1 — Java platform & how it runs
-- **Sessions done:** 0
+- **Just finished:** Module 1 — Java platform & how it runs (JDK/JRE/JVM, bytecode, compile→run, JIT/HotSpot)
+- **Next up:** Module 2 — Syntax map for PHP devs + Maven basics
+- **Sessions done:** 1
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
