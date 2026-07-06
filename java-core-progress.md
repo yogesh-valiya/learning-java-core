@@ -12,7 +12,7 @@
 
 ### Phase 0 — Orientation (fast-track) · ~2 sessions
 - [x] 1. Java platform & how it runs — JDK/JRE/JVM, bytecode, JIT, compile→run flow · **[H]** · classic opener Q
-- [ ] 2. Syntax map for PHP devs + Maven basics — types, packages, `main`, arrays vs collections, Maven lifecycle/deps · **[L]** · fast-tracked cheat-sheet
+- [x] 2. Syntax map for PHP devs + Maven basics — types, packages, `main`, arrays vs collections, Maven lifecycle/deps · **[L]** · fast-tracked cheat-sheet
 
 ### Phase 1 — Core language & OOP the Java way · ~6 sessions
 - [ ] 3. Primitives, wrappers, autoboxing; `==` vs `.equals()` · **[H]** · constant gotcha source
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 1 — Java platform & how it runs (JDK/JRE/JVM, bytecode, compile→run, JIT/HotSpot)
-- **Next up:** Module 2 — Syntax map for PHP devs + Maven basics
-- **Sessions done:** 1
+- **Just finished:** Module 2 — Syntax map for PHP devs + Maven basics (static typing, int division, packages, `main`, GAV/lifecycle/`~/.m2`)
+- **Next up:** Module 3 — Primitives, wrappers, autoboxing; `==` vs `.equals()`
+- **Sessions done:** 2
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
