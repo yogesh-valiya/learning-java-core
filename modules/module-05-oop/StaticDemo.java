@@ -20,10 +20,17 @@ public class StaticDemo {
 
     public static void main(String[] args) {
 
-        Parent p = new Child();   // declared type Parent, runtime type Child
+        Child p = new Child();   // declared type Parent, runtime type Child
 
         System.out.println("p.name() = " + p.name());   // predict? (instance/override)
         System.out.println("p.who()  = " + p.who());    // predict? (static/hiding)
+
+/*
+* p.name() = Parent.static
+* p.who() = Child.instance
+* a.id=1 b.id=2 c.id=3 Counter.total=3
+*
+* */
 
         // shared static field across instances
         Counter a = new Counter();
