@@ -130,3 +130,19 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **Overriding** = same signature in subclass; resolved at **RUNTIME** by **actual object type** (real polymorphism / dynamic dispatch).
   - Rules: identical signature; return same or **covariant**; access **same or wider** (never narrower); **no broader checked exceptions**; can't override `static`/`final`/`private`; use `@Override`.
 - **One-liner:** *Overloading = compile-time, declared type. Overriding = runtime, actual object.*
+
+---
+
+## Module 6 — Interfaces vs Abstract Classes ⭐ favorite design Q
+
+- **Interface** = contract of type/behavior. Methods implicitly `public abstract`; fields implicitly `public static final` (constants). **No instance state.** A class must implement all abstract methods.
+- **Java 8/9 additions:** `default` methods (body in interface, inherited/overridable), `static` methods (factories/utils), `private` methods (Java 9, shared helpers).
+  - **Why default methods?** Backward compatibility — let JDK add `Collection.stream()` without breaking existing implementors.
+- **Abstract class** = partial implementation **with instance state + constructors**; can't be instantiated; mix of abstract + concrete methods.
+- **Multiple inheritance of TYPE not STATE:** implement many interfaces, extend only one class. Banned multiple class inheritance avoids the diamond problem for **state**.
+- **Diamond problem (default methods):** two interfaces with same `default` method → **won't compile** until you override; resolve with `Interface.super.method()` (e.g. `A.super.hi()`).
+- **Durable difference (say this in interviews):** even after Java 8, abstract class has **instance state + constructors**; interface does not. Need shared fields/construction → abstract class; need a capability, esp. across unrelated types or multiple → interface.
+- **When to use:** interface = capability ("can-do", `Comparable`/`Runnable`), abstract class = shared state+code with strong "is-a". Modern default: **prefer interfaces**.
+- **Marker interface:** no methods, tags a type (`Serializable`) for `instanceof` checks.
+- **PHP bridge:** Java `default` methods ≈ **PHP traits**; `A.super.hi()` ≈ PHP trait `insteadof`/`as`.
+- **Under the hood:** interface calls use `invokeinterface` bytecode. Single-abstract-method interface = **functional interface** → basis of lambdas (Module 16).

@@ -18,7 +18,7 @@
 - [x] 3. Primitives, wrappers, autoboxing; `==` vs `.equals()` · **[H]** · constant gotcha source
 - [x] 4. Strings — immutability, string pool, StringBuilder/StringBuffer · **[H]** · very common
 - [x] 5. Classes & OOP mechanics — access modifiers, static, final, this/super, overload vs override rules · **[H]** · map from PHP, focus on Java rules
-- [ ] 6. Interfaces vs abstract classes — default/static methods, "multiple inheritance of type" · **[H]** · favorite design Q
+- [x] 6. Interfaces vs abstract classes — default/static methods, "multiple inheritance of type" · **[H]** · favorite design Q
 - [ ] 7. equals() & hashCode() contract + Object methods (toString, getClass) · **[H]** · extremely frequent
 - [ ] 8. Building immutable classes — defensive copying, why it matters · **[M]** · common design task
 - [ ] 9. Enums (real Java enums, not PHP-style) + EnumMap/EnumSet · **[M]**
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 5 — Classes & OOP mechanics (access modifiers, final, static hiding, this/super + constructor chaining, overloading vs overriding)
-- **Next up:** Module 6 — Interfaces vs abstract classes (default/static methods, "multiple inheritance of type")
-- **Sessions done:** 5
+- **Just finished:** Module 6 — Interfaces vs abstract classes (default/static/private methods, multiple inheritance of type, diamond resolution, when to use which)
+- **Next up:** Module 7 — equals() & hashCode() contract + Object methods (toString, getClass)
+- **Sessions done:** 6
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -95,3 +95,6 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - Static methods are hidden (declared type), instance methods overridden (runtime type)
 - Constructor chaining: implicit `super()`; no-arg-parent gotcha; super-first construction order
 - Overloading = compile-time/declared type; Overriding = runtime/actual object
+- Interface vs abstract class: durable diff = abstract class has state + constructors
+- Why default methods (Java 8): backward compat (e.g. Collection.stream())
+- Diamond problem: two same-name default methods → must override, use `Interface.super.method()`
