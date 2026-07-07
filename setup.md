@@ -21,6 +21,7 @@
 - Keep it tight and practical; skip filler an experienced dev doesn't need.
 - **Tracking of Progress:** End each session by giving me the exact lines to update in progress.md (covered / struggled / next).
 - **Maintain Notes:** Keep pasting take-away of each module into notes.md, make sure to keep it concise, and handy for quick refresher for interview.
+- **Maintain Detailed Lessons:** For each chapter/module, create a standalone detailed lesson file at ./modules/module-XX-name.md capturing the FULL lesson — every concept, example, code, "Under the Hood" and gotcha I taught — written as clean self-contained teaching material. Leave OUT our discussion (none of my answers, none of the replies to them). Produce/finalise this file when the module is complete, and keep doing it for every module going forward.
 
 ### Git Repo Management
 - I'm the only one using it, no worries about branching and all.
