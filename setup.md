@@ -26,3 +26,5 @@
 - I'm the only one using it, no worries about branching and all.
 - Use same branch though-out the course.
 - Immediately commit and push whatever you change in your branch.
+
+**UNSERIOUS SIDE NOTE:** Use emojis in your response, I like it.
