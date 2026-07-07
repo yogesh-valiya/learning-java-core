@@ -96,3 +96,37 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - Under the hood: resizable `byte[]` + length; default capacity **16**; grows ~`2*cap+2` (doubling) → amortized O(1) append, O(n) total. Pre-size `new StringBuilder(n)` to skip resizes.
 - **Gotcha:** compiler turns a *single-expression* `a + b + c` into one efficient concat (StringBuilder / Java 9+ `invokedynamic`). But `+=` in a **loop** = a new StringBuilder per iteration → back to O(n²). `+` is fine for a few pieces on one line; loops need an explicit StringBuilder.
 - Convert back to String at the end with `sb.toString()`.
+
+---
+
+## Module 5 — Classes & OOP mechanics ⭐ high-frequency
+
+### Access modifiers
+- Levels: `public` > `protected` > *default (package-private)* > `private`.
+- **Default (no keyword) = package-private** — visible in same package only. **No PHP equivalent.** (Common Q: "default access level?" → package-private, NOT public.)
+- **Java `protected` = subclasses + same package** (wider than PHP's "class + subclasses").
+- Top-level class can only be `public` or package-private.
+
+### final (3 meanings)
+- **variable** = assign-once; **method** = can't override; **class** = can't extend (`String` is final).
+- **Gotcha:** `final` on a reference = can't reassign the reference; the **object is still mutable**. `final List l` → `l.add()` OK, `l = new...` compile error. `final` ≠ immutable.
+
+### static (class-level, not instance)
+- One shared copy; access via `ClassName.member`. Lives in Metaspace, created at class load (before any instance).
+- Static init block runs **once** at class load, top-to-bottom.
+- **No late static binding** in Java (unlike PHP `static::`) — static calls bind at **compile time** to declared type.
+- **Static methods are HIDDEN, not overridden.** Instance methods → dispatched on **runtime** type (override). Static methods same signature in subclass → resolved on **declared** type (hiding). Mnemonic: *instance = actual object; static = declared type.*
+- Static field holding a big ref = memory-leak source in long-running JVM.
+
+### this / super + constructor chaining
+- `this.field` (current obj), `this(args)` (another constructor same class); `super.x` (parent), `super(args)` (parent constructor).
+- **Java can overload constructors** (PHP can't). Java **auto-inserts `super()`** as 1st statement if you write neither; PHP calls `parent::__construct()` manually.
+- Rules: 1st statement of a constructor is `this(...)` OR `super(...)` (never both — only one first-statement slot). If parent has **no no-arg constructor**, child MUST call `super(args)` explicitly or it won't compile.
+- **Construction order:** super chain up to Object first, then top-down per class: field initializers + init blocks → constructor body. Parent fully built before child body runs.
+
+### Overloading vs Overriding ⭐
+- **Overloading** = same name, different params; resolved at **COMPILE time** by **declared/static type** of args. Can't overload by return type alone. Preference: exact → widening → boxing → varargs. (PHP has no overloading.)
+  - Surprise: `Object x = "hi"; f(x)` → calls `f(Object)`, not `f(String)` (declared type wins).
+- **Overriding** = same signature in subclass; resolved at **RUNTIME** by **actual object type** (real polymorphism / dynamic dispatch).
+  - Rules: identical signature; return same or **covariant**; access **same or wider** (never narrower); **no broader checked exceptions**; can't override `static`/`final`/`private`; use `@Override`.
+- **One-liner:** *Overloading = compile-time, declared type. Overriding = runtime, actual object.*
