@@ -16,7 +16,7 @@
 
 ### Phase 1 — Core language & OOP the Java way · ~6 sessions
 - [x] 3. Primitives, wrappers, autoboxing; `==` vs `.equals()` · **[H]** · constant gotcha source
-- [ ] 4. Strings — immutability, string pool, StringBuilder/StringBuffer · **[H]** · very common
+- [x] 4. Strings — immutability, string pool, StringBuilder/StringBuffer · **[H]** · very common
 - [ ] 5. Classes & OOP mechanics — access modifiers, static, final, this/super, overload vs override rules · **[H]** · map from PHP, focus on Java rules
 - [ ] 6. Interfaces vs abstract classes — default/static methods, "multiple inheritance of type" · **[H]** · favorite design Q
 - [ ] 7. equals() & hashCode() contract + Object methods (toString, getClass) · **[H]** · extremely frequent
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 3 — Primitives, wrappers, autoboxing; `==` vs `.equals()` (string pool, Integer cache −128..127, unboxing NPE)
-- **Next up:** Module 4 — Strings (immutability, string pool, StringBuilder/StringBuffer)
-- **Sessions done:** 3
+- **Just finished:** Module 4 — Strings (immutability + why it enables the pool, intern(), O(n²) `+=` trap, StringBuilder vs StringBuffer)
+- **Next up:** Module 5 — Classes & OOP mechanics (access modifiers, static, final, this/super, overload vs override)
+- **Sessions done:** 4
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -87,3 +87,6 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - String pool: literals are shared/interned; `new String()` forces a new object
 - Integer cache −128..127: `Integer ==` passes for small values, fails above 127 (prod bug)
 - Unboxing a `null` wrapper into a primitive → NPE (no visible method call)
+- String immutability: 4 reasons (pool safety, thread-safety, cached hashCode, security)
+- `String +=` in a loop = O(n²) → use StringBuilder (measured ~1400× faster for 100k chars)
+- StringBuilder (not thread-safe, default) vs StringBuffer (synchronized, legacy)
