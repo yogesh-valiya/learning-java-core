@@ -15,7 +15,7 @@
 - [x] 2. Syntax map for PHP devs + Maven basics — types, packages, `main`, arrays vs collections, Maven lifecycle/deps · **[L]** · fast-tracked cheat-sheet
 
 ### Phase 1 — Core language & OOP the Java way · ~6 sessions
-- [ ] 3. Primitives, wrappers, autoboxing; `==` vs `.equals()` · **[H]** · constant gotcha source
+- [x] 3. Primitives, wrappers, autoboxing; `==` vs `.equals()` · **[H]** · constant gotcha source
 - [ ] 4. Strings — immutability, string pool, StringBuilder/StringBuffer · **[H]** · very common
 - [ ] 5. Classes & OOP mechanics — access modifiers, static, final, this/super, overload vs override rules · **[H]** · map from PHP, focus on Java rules
 - [ ] 6. Interfaces vs abstract classes — default/static methods, "multiple inheritance of type" · **[H]** · favorite design Q
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 2 — Syntax map for PHP devs + Maven basics (static typing, int division, packages, `main`, GAV/lifecycle/`~/.m2`)
-- **Next up:** Module 3 — Primitives, wrappers, autoboxing; `==` vs `.equals()`
-- **Sessions done:** 2
+- **Just finished:** Module 3 — Primitives, wrappers, autoboxing; `==` vs `.equals()` (string pool, Integer cache −128..127, unboxing NPE)
+- **Next up:** Module 4 — Strings (immutability, string pool, StringBuilder/StringBuffer)
+- **Sessions done:** 3
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -83,4 +83,7 @@ _Topics that didn't fully click — revisit / spaced repetition._
 
 ## Interview drill queue
 _Questions & gotchas the mentor flagged that I want to re-practice._
--
+- `==` vs `.equals()` — `==` compares references for objects; always `.equals()` for value
+- String pool: literals are shared/interned; `new String()` forces a new object
+- Integer cache −128..127: `Integer ==` passes for small values, fails above 127 (prod bug)
+- Unboxing a `null` wrapper into a primitive → NPE (no visible method call)
