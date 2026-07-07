@@ -11,14 +11,14 @@
 ## Roadmap
 
 ### Phase 0 — Orientation (fast-track) · ~2 sessions
-- [ ] 1. Java platform & how it runs — JDK/JRE/JVM, bytecode, JIT, compile→run flow · **[H]** · classic opener Q
-- [ ] 2. Syntax map for PHP devs + Maven basics — types, packages, `main`, arrays vs collections, Maven lifecycle/deps · **[L]** · fast-tracked cheat-sheet
+- [x] 1. Java platform & how it runs — JDK/JRE/JVM, bytecode, JIT, compile→run flow · **[H]** · classic opener Q
+- [x] 2. Syntax map for PHP devs + Maven basics — types, packages, `main`, arrays vs collections, Maven lifecycle/deps · **[L]** · fast-tracked cheat-sheet
 
 ### Phase 1 — Core language & OOP the Java way · ~6 sessions
-- [ ] 3. Primitives, wrappers, autoboxing; `==` vs `.equals()` · **[H]** · constant gotcha source
-- [ ] 4. Strings — immutability, string pool, StringBuilder/StringBuffer · **[H]** · very common
-- [ ] 5. Classes & OOP mechanics — access modifiers, static, final, this/super, overload vs override rules · **[H]** · map from PHP, focus on Java rules
-- [ ] 6. Interfaces vs abstract classes — default/static methods, "multiple inheritance of type" · **[H]** · favorite design Q
+- [x] 3. Primitives, wrappers, autoboxing; `==` vs `.equals()` · **[H]** · constant gotcha source
+- [x] 4. Strings — immutability, string pool, StringBuilder/StringBuffer · **[H]** · very common
+- [x] 5. Classes & OOP mechanics — access modifiers, static, final, this/super, overload vs override rules · **[H]** · map from PHP, focus on Java rules
+- [x] 6. Interfaces vs abstract classes — default/static methods, "multiple inheritance of type" · **[H]** · favorite design Q
 - [ ] 7. equals() & hashCode() contract + Object methods (toString, getClass) · **[H]** · extremely frequent
 - [ ] 8. Building immutable classes — defensive copying, why it matters · **[M]** · common design task
 - [ ] 9. Enums (real Java enums, not PHP-style) + EnumMap/EnumSet · **[M]**
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** —
-- **Next up:** Module 1 — Java platform & how it runs
-- **Sessions done:** 0
+- **Just finished:** Module 6 — Interfaces vs abstract classes (default/static/private methods, multiple inheritance of type, diamond resolution, when to use which)
+- **Next up:** Module 7 — equals() & hashCode() contract + Object methods (toString, getClass)
+- **Sessions done:** 6
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -83,4 +83,18 @@ _Topics that didn't fully click — revisit / spaced repetition._
 
 ## Interview drill queue
 _Questions & gotchas the mentor flagged that I want to re-practice._
--
+- `==` vs `.equals()` — `==` compares references for objects; always `.equals()` for value
+- String pool: literals are shared/interned; `new String()` forces a new object
+- Integer cache −128..127: `Integer ==` passes for small values, fails above 127 (prod bug)
+- Unboxing a `null` wrapper into a primitive → NPE (no visible method call)
+- String immutability: 4 reasons (pool safety, thread-safety, cached hashCode, security)
+- `String +=` in a loop = O(n²) → use StringBuilder (measured ~1400× faster for 100k chars)
+- StringBuilder (not thread-safe, default) vs StringBuffer (synchronized, legacy)
+- Default access = package-private (no PHP equivalent); Java `protected` also grants package access
+- `final` reference ≠ immutable object (can still mutate the object)
+- Static methods are hidden (declared type), instance methods overridden (runtime type)
+- Constructor chaining: implicit `super()`; no-arg-parent gotcha; super-first construction order
+- Overloading = compile-time/declared type; Overriding = runtime/actual object
+- Interface vs abstract class: durable diff = abstract class has state + constructors
+- Why default methods (Java 8): backward compat (e.g. Collection.stream())
+- Diamond problem: two same-name default methods → must override, use `Interface.super.method()`
