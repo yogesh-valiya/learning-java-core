@@ -146,3 +146,35 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **Marker interface:** no methods, tags a type (`Serializable`) for `instanceof` checks.
 - **PHP bridge:** Java `default` methods ≈ **PHP traits**; `A.super.hi()` ≈ PHP trait `insteadof`/`as`.
 - **Under the hood:** interface calls use `invokeinterface` bytecode. Single-abstract-method interface = **functional interface** → basis of lambdas (Module 16).
+
+---
+
+## Module 7 — equals() & hashCode() ⭐ extremely frequent
+
+- Every class extends `Object`. Default `equals()` = reference (`==`); default `hashCode()` = identity; default `toString()` = `ClassName@hex`.
+- **equals() contract:** reflexive, symmetric, transitive, consistent, `x.equals(null)`=false.
+- **hashCode() contract:** equal objects (by equals) MUST have same hashCode; unequal MAY collide.
+- **GOLDEN RULE: override `equals()` → MUST override `hashCode()`.** Else hash collections break silently.
+  - **Mechanism:** hash collection = (1) `hashCode()` picks **bucket** → (2) `equals()` matches **within** bucket. Broken hashCode → equal objects in different buckets → `map.get` returns null, `set` keeps duplicates (size grows). No exception — silent bug.
+- **Canonical equals():** `this==o` → `null || getClass()!=o.getClass()` → cast → compare fields.
+- **Canonical hashCode():** `Objects.hash(sameFields)`. `Objects.equals(a,b)` = null-safe field compare.
+- **#1 gotcha:** `equals(MyType)` (wrong param type) = **overload not override** — collections still call `Object.equals`. `@Override` catches it (won't compile). Real signature = `equals(Object)`.
+- **getClass() vs instanceof:** `getClass` = strict, symmetric, but subclass never equals superclass (breaks Liskov). `instanceof` = lenient but can **break symmetry** when subclass adds fields (`p.equals(cp)`=true, `cp.equals(p)`=false). → make value types `final` / use `getClass`.
+- **Mutable-key trap:** mutating a field used in `hashCode()` while object is a HashMap key → entry stranded in old bucket → `get` returns null. **Hash keys must be immutable** (why String/wrappers are ideal keys).
+- **Records (Java 16+):** auto-generate equals/hashCode/toString/accessors/constructor. `toString` format = `Name[x=1, y=2]`. Modern way to write value classes.
+- **PHP:** no equals/hashCode contract (maps use string keys). `__toString()` ≈ `toString()`.
+
+---
+
+## Module 8 — Building Immutable Classes
+
+- **Recipe (5 rules):** (1) class `final`; (2) fields `private final`; (3) no setters; (4) init all in constructor; (5) **defensive copy mutable fields — IN (ctor) and OUT (getters)**.
+- **`final` alone isn't enough** — it freezes the reference, not the object. Mutable fields (`Date`, `List`, arrays) leak without copies.
+- **Two leak points:** (A) constructor stores caller's reference → caller mutates it later; (B) getter returns internal reference → caller mutates it. Fix: `new Date(d.getTime())` in and out.
+- **Collections:** `List.copyOf(x)` (Java 10+) = true immutable copy (best). `Collections.unmodifiableList(x)` = **view, not a copy** (original ref can still mutate it). `new ArrayList<>(x)` also decouples.
+- **Shallow vs deep:** copying a list protects structure but mutable *elements* stay shared. `List<String>` safe (immutable elements); `List<Date>` needs element copies. Keep elements immutable.
+- **Copy BEFORE validate** (avoid TOCTOU — caller mutating between check and store).
+- Primitives/wrappers/String need **no** defensive copy (already immutable). Arrays always mutable → `clone()`/`Arrays.copyOf`.
+- **Records nuance:** records give final fields but **don't auto-defensive-copy** mutable components → add a **compact constructor** to copy in.
+- **Why:** thread-safe for free, safe hash keys, no defensive checks, cacheable, secure.
+- **PHP:** 8.1 `readonly` ≈ final fields; no built-in defensive copy (clone manually).
