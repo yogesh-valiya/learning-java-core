@@ -20,7 +20,7 @@
 - [x] 5. Classes & OOP mechanics — access modifiers, static, final, this/super, overload vs override rules · **[H]** · map from PHP, focus on Java rules
 - [x] 6. Interfaces vs abstract classes — default/static methods, "multiple inheritance of type" · **[H]** · favorite design Q
 - [x] 7. equals() & hashCode() contract + Object methods (toString, getClass) · **[H]** · extremely frequent
-- [ ] 8. Building immutable classes — defensive copying, why it matters · **[M]** · common design task
+- [x] 8. Building immutable classes — defensive copying, why it matters · **[M]** · common design task
 - [ ] 9. Enums (real Java enums, not PHP-style) + EnumMap/EnumSet · **[M]**
 - [ ] 10. Nested & anonymous classes · **[M]** · needed to read real code + understand pre-lambda style
 
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 7 — equals() & hashCode() contract (golden rule, bucket-then-equals mechanism, canonical impl, getClass vs instanceof, mutable-key trap, records)
-- **Next up:** Module 8 — Building immutable classes (defensive copying, why it matters)
-- **Sessions done:** 7
+- **Just finished:** Module 8 — Building immutable classes (5-rule recipe, defensive copying in/out, List.copyOf vs unmodifiableList, records nuance)
+- **Next up:** Module 9 — Enums (real Java enums, not PHP-style) + EnumMap/EnumSet
+- **Sessions done:** 8
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -102,3 +102,6 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - `equals(MyType)` = overload not override; `@Override` catches it (real sig = `equals(Object)`)
 - getClass (symmetric, breaks Liskov) vs instanceof (can break symmetry) — make value types final
 - Mutable-key trap: mutating a hashCode field strands a HashMap entry → keys must be immutable
+- Immutable class: `final` freezes the reference, not the object → defensive-copy mutable fields in AND out
+- `List.copyOf` = true copy; `Collections.unmodifiableList` = view (original can still mutate)
+- Records don't auto-copy mutable components → add a compact constructor

@@ -163,3 +163,18 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **Mutable-key trap:** mutating a field used in `hashCode()` while object is a HashMap key → entry stranded in old bucket → `get` returns null. **Hash keys must be immutable** (why String/wrappers are ideal keys).
 - **Records (Java 16+):** auto-generate equals/hashCode/toString/accessors/constructor. `toString` format = `Name[x=1, y=2]`. Modern way to write value classes.
 - **PHP:** no equals/hashCode contract (maps use string keys). `__toString()` ≈ `toString()`.
+
+---
+
+## Module 8 — Building Immutable Classes
+
+- **Recipe (5 rules):** (1) class `final`; (2) fields `private final`; (3) no setters; (4) init all in constructor; (5) **defensive copy mutable fields — IN (ctor) and OUT (getters)**.
+- **`final` alone isn't enough** — it freezes the reference, not the object. Mutable fields (`Date`, `List`, arrays) leak without copies.
+- **Two leak points:** (A) constructor stores caller's reference → caller mutates it later; (B) getter returns internal reference → caller mutates it. Fix: `new Date(d.getTime())` in and out.
+- **Collections:** `List.copyOf(x)` (Java 10+) = true immutable copy (best). `Collections.unmodifiableList(x)` = **view, not a copy** (original ref can still mutate it). `new ArrayList<>(x)` also decouples.
+- **Shallow vs deep:** copying a list protects structure but mutable *elements* stay shared. `List<String>` safe (immutable elements); `List<Date>` needs element copies. Keep elements immutable.
+- **Copy BEFORE validate** (avoid TOCTOU — caller mutating between check and store).
+- Primitives/wrappers/String need **no** defensive copy (already immutable). Arrays always mutable → `clone()`/`Arrays.copyOf`.
+- **Records nuance:** records give final fields but **don't auto-defensive-copy** mutable components → add a **compact constructor** to copy in.
+- **Why:** thread-safe for free, safe hash keys, no defensive checks, cacheable, secure.
+- **PHP:** 8.1 `readonly` ≈ final fields; no built-in defensive copy (clone manually).
