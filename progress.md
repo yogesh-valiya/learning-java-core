@@ -21,7 +21,7 @@
 - [x] 6. Interfaces vs abstract classes — default/static methods, "multiple inheritance of type" · **[H]** · favorite design Q
 - [x] 7. equals() & hashCode() contract + Object methods (toString, getClass) · **[H]** · extremely frequent
 - [x] 8. Building immutable classes — defensive copying, why it matters · **[M]** · common design task
-- [ ] 9. Enums (real Java enums, not PHP-style) + EnumMap/EnumSet · **[M]**
+- [x] 9. Enums (real Java enums, not PHP-style) + EnumMap/EnumSet · **[M]**
 - [ ] 10. Nested & anonymous classes · **[M]** · needed to read real code + understand pre-lambda style
 
 ### Phase 2 — Generics & Collections (interview core) · ~5 sessions
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 8 — Building immutable classes (5-rule recipe, defensive copying in/out, List.copyOf vs unmodifiableList, records nuance)
-- **Next up:** Module 9 — Enums (real Java enums, not PHP-style) + EnumMap/EnumSet
-- **Sessions done:** 8
+- **Just finished:** Module 9 — Enums (real classes, singletons, per-constant method bodies, EnumMap/EnumSet, enum singleton)
+- **Next up:** Module 10 — Nested & anonymous classes
+- **Sessions done:** 9
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -105,3 +105,7 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - Immutable class: `final` freezes the reference, not the object → defensive-copy mutable fields in AND out
 - `List.copyOf` = true copy; `Collections.unmodifiableList` = view (original can still mutate)
 - Records don't auto-copy mutable components → add a compact constructor
+- Enums: `==` is preferred (singleton, null-safe, compile-checked)
+- Per-constant abstract method bodies beat switch (compiler-enforced completeness)
+- EnumMap (ordinal array, declaration order) / EnumSet (bitvector) > HashMap/HashSet for enum keys
+- Never persist ordinal() (use name()/code); single-element enum = best Singleton

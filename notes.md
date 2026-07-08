@@ -178,3 +178,18 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **Records nuance:** records give final fields but **don't auto-defensive-copy** mutable components → add a **compact constructor** to copy in.
 - **Why:** thread-safe for free, safe hash keys, no defensive checks, cacheable, secure.
 - **PHP:** 8.1 `readonly` ≈ final fields; no built-in defensive copy (clone manually).
+
+---
+
+## Module 9 — Enums
+
+- **Enum = full class; each constant = a singleton instance.** Can have fields, (private) constructor, methods.
+- **Built-ins:** `name()`, `ordinal()` (0-based), `values()` (array), `valueOf("X")` (throws `IllegalArgumentException` if unknown). `toString()` defaults to `name()`. Comparable + Serializable.
+- **`==` is PREFERRED for enums** (opposite of normal objects!): singleton → identity=value, null-safe, compile-checked. `.equals()` also works but `==` wins.
+- `switch` case labels are **unqualified** (`MONDAY`, not `Day.MONDAY`).
+- **Per-constant method bodies** via an abstract method → each constant implements it. Beats `switch`: adding a constant **won't compile** until you give it behavior (compiler-enforced completeness). Standard "avoid switch" answer.
+- **Enums can implement interfaces** (can't extend a class — already extends `java.lang.Enum`).
+- **EnumMap** = Map keyed by enum, backed by an **array indexed by ordinal()** (no hashing; iterates in **declaration order**, not insertion). **EnumSet** = **bitvector** (a `long` for ≤64). Both faster/compact than HashMap/HashSet for enum keys/elements.
+- **Under the hood:** compiler makes `final class extends Enum`; constants are `public static final`, built in a static initializer at class load. Singleton survives serialization + reflection → single-element enum = best **Singleton** (Effective Java).
+- **Gotchas:** never persist `ordinal()` (reordering corrupts data → use `name()`/explicit code); keep enum fields `final` (constants are shared singletons = global state).
+- **PHP:** 8.1+ has real enums (pure + backed `->value` ≈ Java enum w/ field); pre-8.1 = untyped class constants.
