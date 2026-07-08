@@ -193,3 +193,16 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **Under the hood:** compiler makes `final class extends Enum`; constants are `public static final`, built in a static initializer at class load. Singleton survives serialization + reflection → single-element enum = best **Singleton** (Effective Java).
 - **Gotchas:** never persist `ordinal()` (reordering corrupts data → use `name()`/explicit code); keep enum fields `final` (constants are shared singletons = global state).
 - **PHP:** 8.1+ has real enums (pure + backed `->value` ≈ Java enum w/ field); pre-8.1 = untyped class constants.
+
+---
+
+## Module 10 — Nested & Anonymous Classes
+
+- **4 kinds:** static nested, inner (non-static), local, anonymous.
+- **Static nested** = no link to outer instance; `new Outer.StaticNested()`. Like a namespaced top-level class (e.g. `Map.Entry`).
+- **Inner (non-static)** = **hidden reference to an outer instance**; accesses outer's instance fields; needs `outer.new Inner()` syntax.
+- **Anonymous class** = inline unnamed class+instance implementing an interface/abstract class (`new Runnable(){...}`). **Pre-lambda way to pass behavior**; lambda ≈ anonymous impl of a functional interface.
+- **Effectively final:** captured local vars must be assigned once (copied into synthetic fields). **Captured local = frozen copy; outer instance field = live read** through the outer reference.
+- **Under the hood:** compiler emits `Outer$Inner.class`, `Outer$1.class` (anonymous). Inner class has a synthetic outer-reference field; static nested does not.
+- **⚠️ Memory-leak gotcha:** inner instance pins its outer alive (can't GC) if it outlives it (long-lived listener/callback/returned Iterator). **Fix: make it `static` if outer isn't needed** (Effective Java: prefer static nested).
+- **PHP:** anonymous classes since PHP 7; closures `function() use($x){}` ≈ capture. No class-in-class/outer binding.

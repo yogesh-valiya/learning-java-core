@@ -22,7 +22,7 @@
 - [x] 7. equals() & hashCode() contract + Object methods (toString, getClass) · **[H]** · extremely frequent
 - [x] 8. Building immutable classes — defensive copying, why it matters · **[M]** · common design task
 - [x] 9. Enums (real Java enums, not PHP-style) + EnumMap/EnumSet · **[M]**
-- [ ] 10. Nested & anonymous classes · **[M]** · needed to read real code + understand pre-lambda style
+- [x] 10. Nested & anonymous classes · **[M]** · needed to read real code + understand pre-lambda style
 
 ### Phase 2 — Generics & Collections (interview core) · ~5 sessions
 - [ ] 11. Generics — bounded types, wildcards (`? extends`/`? super`), PECS, type erasure · **[H]**
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 9 — Enums (real classes, singletons, per-constant method bodies, EnumMap/EnumSet, enum singleton)
-- **Next up:** Module 10 — Nested & anonymous classes
-- **Sessions done:** 9
+- **Just finished:** Module 10 — Nested & anonymous classes (static nested vs inner, anonymous/pre-lambda, effectively final, inner-class memory leak). **PHASE 1 COMPLETE.**
+- **Next up:** Module 11 — Generics (bounded types, wildcards `? extends`/`? super`, PECS, type erasure) — start of Phase 2
+- **Sessions done:** 10
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -109,3 +109,6 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - Per-constant abstract method bodies beat switch (compiler-enforced completeness)
 - EnumMap (ordinal array, declaration order) / EnumSet (bitvector) > HashMap/HashSet for enum keys
 - Never persist ordinal() (use name()/code); single-element enum = best Singleton
+- Static nested (no outer ref) vs inner (hidden outer ref, needs `outer.new Inner()`)
+- Inner class memory leak: pins outer alive → make it `static` if outer not needed
+- Effectively final capture: local = frozen copy; outer field = live read
