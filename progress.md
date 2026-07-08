@@ -2,7 +2,7 @@
 
 **Goal:** Job-ready for Java backend roles (India), interview-optimized.
 **Scope:** Java Core only — Spring Boot is a separate project.
-**How to use:** Start each session in a new chat inside the project → paste this file → learn one module → apply the update lines the mentor gives you at the end.
+**How to use:** This is the live tracker. To resume, start a session and say "let's continue" — the `java-core-mentor` skill reads this file and picks up from "Next up". (See `README.md` for the repo map, `SKILL.md` for the teaching method.)
 
 **Marking:** check done with `[x]`; add 🔄 next to the one in progress. Priority: **[H]**igh / **[M]**edium / **[L]**ow.
 
