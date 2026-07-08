@@ -146,3 +146,20 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **Marker interface:** no methods, tags a type (`Serializable`) for `instanceof` checks.
 - **PHP bridge:** Java `default` methods ≈ **PHP traits**; `A.super.hi()` ≈ PHP trait `insteadof`/`as`.
 - **Under the hood:** interface calls use `invokeinterface` bytecode. Single-abstract-method interface = **functional interface** → basis of lambdas (Module 16).
+
+---
+
+## Module 7 — equals() & hashCode() ⭐ extremely frequent
+
+- Every class extends `Object`. Default `equals()` = reference (`==`); default `hashCode()` = identity; default `toString()` = `ClassName@hex`.
+- **equals() contract:** reflexive, symmetric, transitive, consistent, `x.equals(null)`=false.
+- **hashCode() contract:** equal objects (by equals) MUST have same hashCode; unequal MAY collide.
+- **GOLDEN RULE: override `equals()` → MUST override `hashCode()`.** Else hash collections break silently.
+  - **Mechanism:** hash collection = (1) `hashCode()` picks **bucket** → (2) `equals()` matches **within** bucket. Broken hashCode → equal objects in different buckets → `map.get` returns null, `set` keeps duplicates (size grows). No exception — silent bug.
+- **Canonical equals():** `this==o` → `null || getClass()!=o.getClass()` → cast → compare fields.
+- **Canonical hashCode():** `Objects.hash(sameFields)`. `Objects.equals(a,b)` = null-safe field compare.
+- **#1 gotcha:** `equals(MyType)` (wrong param type) = **overload not override** — collections still call `Object.equals`. `@Override` catches it (won't compile). Real signature = `equals(Object)`.
+- **getClass() vs instanceof:** `getClass` = strict, symmetric, but subclass never equals superclass (breaks Liskov). `instanceof` = lenient but can **break symmetry** when subclass adds fields (`p.equals(cp)`=true, `cp.equals(p)`=false). → make value types `final` / use `getClass`.
+- **Mutable-key trap:** mutating a field used in `hashCode()` while object is a HashMap key → entry stranded in old bucket → `get` returns null. **Hash keys must be immutable** (why String/wrappers are ideal keys).
+- **Records (Java 16+):** auto-generate equals/hashCode/toString/accessors/constructor. `toString` format = `Name[x=1, y=2]`. Modern way to write value classes.
+- **PHP:** no equals/hashCode contract (maps use string keys). `__toString()` ≈ `toString()`.
