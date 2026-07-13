@@ -28,7 +28,7 @@
 - [x] 11. Generics — bounded types, wildcards (`? extends`/`? super`), PECS, type erasure · **[H]**
 - [x] 12. Collections overview — List/Set/Queue/Map hierarchy; ArrayList vs LinkedList · **[H]**
 - [x] 13. HashMap internals — buckets, hashing, treeify (Java 8), resize, load factor · **[H]** · the #1 internals Q
-- [ ] 14. Set/Map variants — HashSet, LinkedHashMap, TreeMap; when to use which · **[H]**
+- [x] 14. Set/Map variants — HashSet, LinkedHashMap, TreeMap; when to use which · **[H]**
 - [ ] 15. Comparable vs Comparator, sorting; iterators, fail-fast vs fail-safe · **[H]**
 
 ### Phase 3 — Modern functional Java · ~4 sessions
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 13 — HashMap internals (bucket indexing/bitmask, hash spreading, treeification + its real limits, resize/load-factor mechanics, pre-sizing).
-- **Next up:** Module 14 — Set/Map variants (HashSet, LinkedHashMap, TreeMap; when to use which)
-- **Sessions done:** 13
+- **Just finished:** Module 14 — Set/Map variants (HashSet as HashMap wrapper, LinkedHashSet/LinkedHashMap insertion/access order + LRU cache pattern, TreeSet/TreeMap guaranteed O(log n) + navigation methods, null handling).
+- **Next up:** Module 15 — Comparable vs Comparator, sorting; iterators, fail-fast vs fail-safe
+- **Sessions done:** 14
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -135,3 +135,7 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - Load factor 0.75 = space/time tradeoff; resize doubles capacity, splits buckets via one new bit (lo/hi), no full rehash
 - new HashMap<>(n) rounds UP to next power of two (tableSizeFor)
 - Pre-size HashMap when count is known to skip resize-copy cascade — benchmark via separate JVM processes, not in-process back-to-back (JIT/GC bleed gives unreliable results)
+- HashSet is a thin wrapper over HashMap<E,Object> (dummy PRESENT value) — same guarantees/gotchas as HashMap
+- LinkedHashMap threads a doubly-linked list through the same hash nodes; accessOrder=true + removeEldestEntry override = LRU cache
+- TreeSet/TreeMap are a real always-on red-black tree — genuinely guaranteed O(log n) since Comparable/Comparator is mandatory (unlike HashMap's best-effort treeify)
+- TreeMap/TreeSet reject null (NPE on compareTo); HashMap/HashSet allow one null key

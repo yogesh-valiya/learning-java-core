@@ -270,3 +270,17 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **`tableSizeFor`:** initial-capacity constructor arg always rounds **up** to the next power of two (`new HashMap<>(50)` → capacity 64).
 - **Practical tip:** pre-size (`new HashMap<>((int)(n/0.75f)+1)`) when the count is known upfront — skips the resize-copy cascade. (Measure this via **separate JVM processes**, not back-to-back in one process — in-process timing let JIT/GC state bleed between configs and gave backwards results.)
 - **PHP:** array/hashtable hybrid exposes none of this — no capacity, no load factor, no visible resize policy. Java makes every tradeoff explicit and tunable.
+
+---
+
+## Module 14 — Set/Map Variants
+
+- **HashSet = thin wrapper over `HashMap<E,Object>`** (`add(e)` → `map.put(e, PRESENT)`). Same internals/guarantees as Module 13: O(1) average, no ordering.
+- **LinkedHashMap/LinkedHashSet:** same hash nodes as HashMap, PLUS a doubly-linked list threaded through them for predictable iteration. Default = **insertion order**. `accessOrder=true` constructor flag = re-orders on every get/put to **access order** (most-recently-used moves to the end).
+- **LRU cache in ~5 lines:** `new LinkedHashMap<>(cap, 0.75f, true) { removeEldestEntry() { return size() > N; } }` — accessOrder=true + override removeEldestEntry.
+- **TreeSet/TreeMap = a REAL, always-on red-black tree** (not conditional like HashMap's treeify). Requires `Comparable` or a supplied `Comparator` up front — no ordering signal → `ClassCastException` at insertion, not silent degradation. Genuinely guaranteed O(log n) (unlike HashMap's best-effort treeification from Module 13).
+- **Navigation methods** (TreeMap/TreeSet only): `firstKey/lastKey`, `higherKey/lowerKey`, `ceilingKey/floorKey`, `headMap/tailMap/subMap` (range views).
+- **Null handling:** HashSet/HashMap/LinkedHash* allow one null (key). **TreeSet/TreeMap reject null** — NPE on `compareTo`.
+- **Demo confirms:** HashSet order is neither insertion nor sorted (pure hash/bucket layout) — proof there's truly no ordering guarantee.
+- **When to use which:** don't care about order → Hash*; need insertion order → LinkedHash*; need sorted/range queries → Tree*; need LRU → LinkedHashMap(accessOrder=true).
+- **PHP:** arrays are always insertion-ordered by default — no PHP equivalent of choosing between unordered/insertion-ordered/sorted as distinct types with different cost tradeoffs.
