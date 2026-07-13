@@ -41,7 +41,7 @@
 - [x] 20. Exception handling — checked vs unchecked, try-with-resources, custom exceptions, finally semantics, best practices · **[H]**
 
 ### Phase 5 — Concurrency (senior differentiator) · ~6 sessions
-- [ ] 21. Threads — lifecycle, Runnable vs Callable, core methods · **[H]**
+- [x] 21. Threads — lifecycle, Runnable vs Callable, core methods · **[H]**
 - [ ] 22. Synchronization & memory model — synchronized, volatile, race conditions, deadlock, wait/notify · **[H]** · big separator
 - [ ] 23. Executors & thread pools — ExecutorService, Future, CompletableFuture, pool types · **[H]**
 - [ ] 24. Concurrent collections, atomics & locks — ConcurrentHashMap, BlockingQueue, ReentrantLock, atomics · **[H]**
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 20 — Exception handling (Throwable hierarchy, checked vs unchecked, try-with-resources reverse-close + suppressed exceptions, custom exception cause chaining, the return-in-finally gotcha, best practices). **PHASE 4 COMPLETE.**
-- **Next up:** Module 21 — Threads (lifecycle, Runnable vs Callable, core methods) — start of Phase 5 (Concurrency)
-- **Sessions done:** 20
+- **Just finished:** Module 21 — Threads (shared-heap mental shift, Runnable vs extending Thread, start-vs-run gotcha, Callable+FutureTask, lifecycle states, join/sleep/interrupt/daemon).
+- **Next up:** Module 22 — Synchronization & memory model (synchronized, volatile, race conditions, deadlock, wait/notify) — big separator
+- **Sessions done:** 21
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -171,3 +171,8 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - Custom exceptions must chain the cause (super(message, cause)) — never swallow the original when wrapping
 - return/throw INSIDE finally silently swallows any in-flight exception with zero trace — verified, never do this
 - Checked exceptions are controversial — interact badly with lambdas/streams (can't throw checked from most functional interfaces without wrapping)
+- JVM threads share ONE heap (unlike PHP's shared-nothing per-request model) — root cause of every concurrency bug
+- .run() is a plain method call on the current thread (no new thread); only .start() spawns a real thread — verified via thread names
+- Callable<V> returns a value/can throw checked exceptions; Runnable can't. FutureTask bridges a Callable onto a Thread, .get() retrieves the result
+- Thread lifecycle: NEW -> RUNNABLE -> (BLOCKED/WAITING/TIMED_WAITING) -> TERMINATED; terminated threads can't restart (IllegalThreadStateException)
+- sleep() does NOT release held locks (contrast wait(), which does); interrupt() is cooperative only — no-op on a thread not blocked in an interruptible call unless it checks isInterrupted() itself

@@ -368,3 +368,17 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **Best practices:** catch specific not broad; never swallow silently (empty catch); don't use exceptions for control flow; chain causes; prefer try-with-resources over manual finally-cleanup.
 
 **PHASE 4 COMPLETE** (Module 20: Exception handling).
+
+---
+
+## Module 21 — Threads
+
+- **⭐ Mental shift:** PHP = shared-nothing (fresh memory per request). JVM threads SHARE one heap — genuinely simultaneous access to the same objects/static fields. No PHP analogy. Root cause of every concurrency bug in this phase.
+- **Prefer `Runnable` + `Thread` over extending `Thread`** — separates task from executor, doesn't burn the one superclass slot.
+- **`start()` vs `run()`:** `.run()` = plain method call on the CURRENT thread, no new thread at all (verified: printed "main"). Only `.start()` spawns a real thread (verified: printed "Thread-1"). Compiles and runs fine either way — that's the trap.
+- **`Runnable` (no return, no checked throws) vs `Callable<V>` (returns V, can throw checked).** Bridge: `FutureTask<V>` implements both `Runnable` and `Future<V>` — wrap a Callable, run it via `new Thread(futureTask)`, retrieve with `.get()` (verified: returned 42). Predecessor to `ExecutorService.submit()` (Module 23).
+- **Lifecycle:** NEW → RUNNABLE → (BLOCKED/WAITING/TIMED_WAITING) → TERMINATED. Verified live: NEW before start() → TIMED_WAITING during `sleep(300)` → TERMINATED after join(). **Terminated threads can't restart** — 2nd `.start()` throws `IllegalThreadStateException` (verified).
+- **BLOCKED** = waiting on a `synchronized` lock. **WAITING** = indefinite (`wait()`/`join()` no timeout/`park()`). **TIMED_WAITING** = bounded (`sleep(ms)`/`wait(ms)`/`join(ms)`).
+- **`join()`** = caller blocks until target reaches TERMINATED. **`sleep(ms)`** pauses current thread, does **NOT** release held locks (contrast `wait()`, which does — Module 22). **`interrupt()`** = cooperative only — wakes a thread blocked in sleep/wait/join with `InterruptedException` (verified); does NOTHING to a thread running plain code unless it explicitly checks `isInterrupted()`. No forcible kill in Java (`Thread.stop()` deprecated — can corrupt shared state).
+- **Daemon threads** (`setDaemon(true)` before start) don't keep the JVM alive alone.
+- **PHP:** no close equivalent — PHP-FPM workers are separate processes, not shared-heap threads.
