@@ -314,3 +314,17 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **Primitive specializations** (`IntPredicate`, `ToIntFunction`, etc.) avoid autoboxing — same cost Module 3 warned about, now showing up in `java.util.function`.
 - **4 method-reference kinds:** static (`Integer::parseInt`), bound-instance (`System.out::println` — receiver fixed, param = argument), **unbound-instance** (`String::toUpperCase` — param BECOMES the receiver, easy to mix up with static), constructor (`ArrayList::new`).
 - **PHP:** closures capture via explicit `use($x)`; no equivalent of the lambda/anonymous-class `this`-binding split since PHP only has one way to define inline behavior.
+
+---
+
+## Module 17 — Streams API
+
+- **Stream = lazy pipeline, not a data structure.** Nothing runs until a terminal op fires. **Single-use** — a 2nd terminal op on the same stream throws `IllegalStateException`.
+- **Intermediate** (map/filter/flatMap/sorted/distinct/limit/skip/peek) = lazy, returns a new Stream. **Terminal** (collect/reduce/forEach/count/anyMatch/findFirst/toArray) = triggers execution, produces a real result.
+- **⭐ The model that matters:** processing is **vertical** (one element pulled through ALL stages before the next element starts), not horizontal/stage-by-stage. `findFirst`/`anyMatch`/`limit` **short-circuit** — stop the whole pipeline the instant satisfied. Verified: `peek` on an 8-element list saw only elements 1-2 before `findFirst` ended everything; 3-8 never touched by ANY stage.
+- **map vs flatMap:** map = 1-to-1. flatMap = 1-to-many + flattens (`Stream<List<T>>` → `Stream<T>` via `.flatMap(List::stream)`).
+- **reduce:** 3 overloads — `reduce(BinaryOperator)`→Optional; `reduce(identity,BinaryOperator)`→T; `reduce(identity,accumulator,combiner)` — 3-arg exists for PARALLEL streams (combiner merges per-thread partial results).
+- **Collectors:** `toList`/`joining(delim)`; `groupingBy(classifier)` → Map<K,List<T>>; `groupingBy(classifier, downstream)` — pair with `counting()`/`mapping()`/nested `groupingBy` to reshape each bucket; `partitioningBy(predicate)` → always exactly `Map<Boolean,List<T>>`.
+- **Primitive streams** (IntStream/LongStream/DoubleStream): avoid autoboxing per element — same Module 3 cost, `mapToInt`/`mapToObj`/`.boxed()` convert at the boundary.
+- **Parallel streams:** `ForkJoinPool.commonPool()`-backed; NOT automatically faster (coordination overhead can lose to sequential on small/cheap work); shared mutable state touched inside the lambda = race condition. Full depth in Phase 5.
+- **PHP:** `array_filter`/`array_map`/`array_reduce` run eagerly, full intermediate array at each step (horizontal) — no laziness, no short-circuiting, no single-use restriction.

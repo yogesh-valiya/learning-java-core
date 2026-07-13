@@ -33,7 +33,7 @@
 
 ### Phase 3 — Modern functional Java · ~4 sessions
 - [x] 16. Lambdas & functional interfaces (Function/Predicate/Consumer/Supplier) + method references · **[H]**
-- [ ] 17. Streams API — map/filter/reduce, Collectors (groupingBy/joining/toMap), flatMap, parallel · **[H]**
+- [x] 17. Streams API — map/filter/reduce, Collectors (groupingBy/joining/toMap), flatMap, parallel · **[H]**
 - [ ] 18. Optional — right usage, avoiding null, common mistakes · **[M]**
 - [ ] 19. Date/Time API (java.time) — LocalDate/Time, Duration/Period, formatting · **[M]**
 
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 16 — Lambdas & functional interfaces (SAM rule, lambda vs anonymous-class `this`-binding + compilation differences, 4 core functional interfaces + chaining, 4 kinds of method references).
-- **Next up:** Module 17 — Streams API (map/filter/reduce, Collectors: groupingBy/joining/toMap, flatMap, parallel)
-- **Sessions done:** 16
+- **Just finished:** Module 17 — Streams API (lazy pipeline + single-use, intermediate vs terminal, vertical/short-circuit processing model, map vs flatMap, reduce overloads, Collectors incl. groupingBy+downstream, primitive streams, parallel caution).
+- **Next up:** Module 18 — Optional (right usage, avoiding null, common mistakes)
+- **Sessions done:** 17
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -150,3 +150,9 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - Lambdas compile via invokedynamic/LambdaMetafactory at runtime, not a .class file per lambda like anonymous classes
 - andThen = receiver runs first, then argument; compose = argument runs first, then receiver
 - Unbound-instance method reference (String::toUpperCase) — the lambda's parameter BECOMES the receiver, easy to confuse with a static reference
+- Stream = lazy pipeline, not a data structure; single-use (2nd terminal op throws IllegalStateException)
+- Processing is vertical (one element through ALL stages) and short-circuits on findFirst/anyMatch/limit — not stage-by-stage over the whole collection
+- map = 1-to-1; flatMap = 1-to-many + flattens
+- reduce's 3-arg overload (identity, accumulator, combiner) exists for parallel streams
+- groupingBy + downstream collector (counting/mapping/nested groupingBy) reshapes each bucket — the practical power move
+- Parallel streams aren't automatically faster; shared mutable state in the lambda is a race condition waiting to happen
