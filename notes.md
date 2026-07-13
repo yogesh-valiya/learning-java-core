@@ -354,3 +354,17 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **PHP:** `DateTime` (mutable mistake) vs `DateTimeImmutable` (the fix) mirrors this exactly; `DateInterval` ≈ Duration+Period combined.
 
 **PHASE 3 COMPLETE** (Modules 16-19: Lambdas & functional interfaces, Streams API, Optional, Date/Time API).
+
+---
+
+## Module 20 — Exception Handling
+
+- **Hierarchy:** `Throwable` → `Error` (JVM-level, don't catch) + `Exception` → `RuntimeException` (**unchecked**) / everything else (**checked**, compiler-enforced: catch or `throws`).
+- **PHP has NO checked exceptions** — every PHP exception is "unchecked" in Java's sense. This enforcement mechanism is Java-specific.
+- **Checked exceptions are controversial:** interact badly with lambdas/streams (can't throw checked from most functional interfaces without wrapping) — modern code often favors unchecked even for recoverable cases.
+- **try-with-resources:** any `AutoCloseable`; multiple resources close in **REVERSE** declaration order (verified: r2 before r1). If try throws AND close() also throws, the **original exception wins**, close()'s exception is attached as **suppressed** (`addSuppressed`/`getSuppressed`), NOT swapped in — fixes the old finally-masks-original-exception bug.
+- **Custom exceptions:** extend `Exception` (checked) or `RuntimeException` (unchecked); ALWAYS chain the cause (`super(message, cause)`) — never swallow the original when wrapping.
+- **⚠️ finally's worst gotcha:** `finally` always runs, but a `return`/`throw` INSIDE finally silently swallows any in-flight exception with zero trace. Verified: a method that throws in try but `return`s in finally returns normally — the exception vanishes completely. Never put `return` in `finally`.
+- **Best practices:** catch specific not broad; never swallow silently (empty catch); don't use exceptions for control flow; chain causes; prefer try-with-resources over manual finally-cleanup.
+
+**PHASE 4 COMPLETE** (Module 20: Exception handling).

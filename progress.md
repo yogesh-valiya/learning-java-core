@@ -38,7 +38,7 @@
 - [x] 19. Date/Time API (java.time) — LocalDate/Time, Duration/Period, formatting · **[M]**
 
 ### Phase 4 — Exceptions · ~2 sessions
-- [ ] 20. Exception handling — checked vs unchecked, try-with-resources, custom exceptions, finally semantics, best practices · **[H]**
+- [x] 20. Exception handling — checked vs unchecked, try-with-resources, custom exceptions, finally semantics, best practices · **[H]**
 
 ### Phase 5 — Concurrency (senior differentiator) · ~6 sessions
 - [ ] 21. Threads — lifecycle, Runnable vs Callable, core methods · **[H]**
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 19 — Date/Time API (why java.time replaced Date/Calendar, core types, Duration-vs-Period calendar-clamping proof, immutability, DateTimeFormatter vs SimpleDateFormat thread-safety). **PHASE 3 COMPLETE.**
-- **Next up:** Module 20 — Exception handling (checked vs unchecked, try-with-resources, custom exceptions, finally semantics, best practices) — start of Phase 4
-- **Sessions done:** 19
+- **Just finished:** Module 20 — Exception handling (Throwable hierarchy, checked vs unchecked, try-with-resources reverse-close + suppressed exceptions, custom exception cause chaining, the return-in-finally gotcha, best practices). **PHASE 4 COMPLETE.**
+- **Next up:** Module 21 — Threads (lifecycle, Runnable vs Callable, core methods) — start of Phase 5 (Concurrency)
+- **Sessions done:** 20
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -165,3 +165,9 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - java.time types are immutable, same reassignment discipline as String
 - DateTimeFormatter is thread-safe; old SimpleDateFormat is NOT (shared instance across threads silently corrupts results)
 - ChronoUnit.between = single-unit raw count; Period.between = full calendar breakdown (years+months+days)
+- PHP has no checked exceptions — Java's checked/unchecked split and compiler enforcement is PHP-dev-new territory
+- try-with-resources closes multiple resources in REVERSE declaration order
+- If try throws AND close() also throws, the ORIGINAL exception wins and propagates; close()'s exception is suppressed (addSuppressed/getSuppressed), not swapped in
+- Custom exceptions must chain the cause (super(message, cause)) — never swallow the original when wrapping
+- return/throw INSIDE finally silently swallows any in-flight exception with zero trace — verified, never do this
+- Checked exceptions are controversial — interact badly with lambdas/streams (can't throw checked from most functional interfaces without wrapping)
