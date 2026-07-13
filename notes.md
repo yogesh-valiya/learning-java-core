@@ -450,3 +450,16 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **PHP:** 8's attributes (`#[Attribute]`) are the direct structural equivalent, used by Symfony/Doctrine the same way.
 
 **PHASE 6 COMPLETE** (Modules 25-26: Memory model & GC, Class loading/reflection/annotations).
+
+---
+
+## Module 27 — I/O & Serialization
+
+- **Byte streams** (InputStream/OutputStream, raw bytes) vs **character streams** (Reader/Writer, needs a charset) — split exists because text without a defined encoding = mojibake. `InputStreamReader`/`OutputStreamWriter` bridge the two.
+- **`java.io` = the Decorator pattern**, wall-to-wall: `new BufferedReader(new InputStreamReader(new FileInputStream(...), charset))` — each layer adds ONE capability. Every stream is `AutoCloseable` (Module 20 try-with-resources callback).
+- **NIO.2 (`Path`/`Files`, Java 7+)** = modern default over legacy `java.io.File`. `Files.writeString`/`readString` (Java 11+) verified round-tripping the same file the decorator chain reads. Real reason to prefer it: `File` methods return `false`/`0` on failure (unhelpful); `Files` throws SPECIFIC exceptions (`NoSuchFileException`, etc.).
+- **`Serializable`** = marker interface (Module 9 callback). **Always declare `serialVersionUID` explicitly** — unspecified, JVM auto-computes it from class structure, and a trivial change can silently break old serialized data (`InvalidClassException`).
+- **`transient`** = skipped during serialization, gets DEFAULT value on deserialize (never the original). VERIFIED: transient `sessionToken` → `null` after deserialize; non-transient `username` → correctly restored.
+- **⚠️ `NotSerializableException` fires at RUNTIME, not compile time** — a non-Serializable field left unmarked (e.g. a `Thread`) compiles fine, throws only when you actually try to serialize. VERIFIED live.
+- **⚠️ Deserialization bypasses constructors entirely** — a class validating invariants only in its constructor gets ZERO protection against a crafted/corrupted byte stream. Real reason modern code avoids `Serializable` for untrusted input, preferring JSON/protobuf.
+- **PHP:** `serialize()`/`unserialize()` shares the identical pitfall list — `__wakeup()` ≈ `readObject()`, exists because of the same "object injection via untrusted unserialize()" concern.

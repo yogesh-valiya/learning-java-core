@@ -51,7 +51,7 @@
 - [x] 26. Class loading, reflection & annotations (create + process) · **[M]** · annotations bridge to Spring
 
 ### Phase 7 — Rounding out · ~3 sessions
-- [ ] 27. I/O & serialization — File/stream I/O, NIO basics, Serializable/transient pitfalls · **[M]**
+- [x] 27. I/O & serialization — File/stream I/O, NIO basics, Serializable/transient pitfalls · **[M]**
 - [ ] 28. Modern Java 11–21 — var, records, sealed classes, pattern matching, switch expressions, text blocks, virtual threads (overview) · **[M]** · increasingly asked
 
 ### Phase 8 — Interview consolidation · ~2 sessions
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 26 — Class loading, reflection & annotations (classloader delegation, ClassNotFoundException vs NoClassDefFoundError verified, getFields vs getDeclaredFields verified, setAccessible private access verified, @Retention RUNTIME-vs-CLASS reflective visibility verified — direct bridge to how Spring/JUnit/Jackson work). **PHASE 6 COMPLETE.**
-- **Next up:** Module 27 — I/O & serialization (File/stream I/O, NIO basics, Serializable/transient pitfalls) — start of Phase 7 (Rounding out)
-- **Sessions done:** 26
+- **Just finished:** Module 27 — I/O & serialization (byte vs char streams, java.io as Decorator pattern, NIO.2 Path/Files as modern default verified against decorator-chain read, transient defaulting verified, NotSerializableException-at-runtime verified, deserialization-bypasses-constructors caution).
+- **Next up:** Module 28 — Modern Java 11-21 (var, records, sealed classes, pattern matching, switch expressions, text blocks, virtual threads overview)
+- **Sessions done:** 27
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -199,3 +199,8 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - getFields()/getMethods() = public+inherited; getDeclaredFields()/getDeclaredMethods() = all declared here (private included), not inherited — verified fully disjoint on a Base/Derived pair
 - setAccessible(true) bypasses access checks — literally how Spring/Jackson/JUnit work (inject/deserialize/invoke private members); real perf cost, increasingly JPMS-restricted
 - @Retention(RUNTIME) required for reflective visibility (isAnnotationPresent/getAnnotation) — default CLASS retention is invisible to reflection — verified identical check returns true vs false based purely on retention policy
+- java.io is the Decorator pattern wall-to-wall (BufferedReader wrapping InputStreamReader wrapping FileInputStream); prefer NIO.2 Path/Files over java.io.File (throws real exceptions vs silent false/0)
+- Serializable is a marker interface; ALWAYS declare serialVersionUID explicitly or structural changes silently break old serialized data
+- transient fields get their DEFAULT value on deserialization, never the original — verified live
+- NotSerializableException for an unmarked non-Serializable field fires at RUNTIME not compile time — verified live (Thread field)
+- Deserialization bypasses constructors entirely — zero invariant/defensive-copy protection against a crafted byte stream; real reason modern code avoids Serializable for untrusted input
