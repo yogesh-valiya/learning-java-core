@@ -463,3 +463,18 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **⚠️ `NotSerializableException` fires at RUNTIME, not compile time** — a non-Serializable field left unmarked (e.g. a `Thread`) compiles fine, throws only when you actually try to serialize. VERIFIED live.
 - **⚠️ Deserialization bypasses constructors entirely** — a class validating invariants only in its constructor gets ZERO protection against a crafted/corrupted byte stream. Real reason modern code avoids `Serializable` for untrusted input, preferring JSON/protobuf.
 - **PHP:** `serialize()`/`unserialize()` shares the identical pitfall list — `__wakeup()` ≈ `readObject()`, exists because of the same "object injection via untrusted unserialize()" concern.
+
+---
+
+## Module 28 — Modern Java 11–21
+
+- **`var` (Java 10):** local-only (never fields/params/returns), STILL statically typed — inferred concrete type fixed forever, NOT PHP-style dynamic typing. Verified: `var message="hello"` → runtime class `java.lang.String`.
+- **Records, deepened:** compact constructor (`Range { if(...) throw...; }`) validates WITHOUT restating field assignments (still happen implicitly after). Verified: valid Range ok, invalid Range threw `IllegalArgumentException`. Implicitly `final` + extend `java.lang.Record` (can't extend anything else) but CAN implement interfaces + have static members.
+- **Sealed classes/interfaces (Java 17):** `permits` fixes the COMPLETE implementer set at compile time; every permitted type must be `final`/`sealed`/`non-sealed`. Enables compiler-checked EXHAUSTIVE switch (no `default` needed) — generalizes Module 9's enum-completeness guarantee to whole class hierarchies. Verified: 3-way sealed Shape hierarchy, switch with zero default compiled and ran correctly.
+- **Pattern matching:** `instanceof` pattern (Java 16) removes the redundant cast after the check. Switch pattern matching (Java 21) matches type + destructures records directly in the case label (`case Circle(double r) ->`) + guarded `when` clauses. Verified record deconstruction working correctly for all 3 shapes.
+- **Switch expressions (Java 14):** `->` arms, NO fall-through (fixes forgotten-break bug), `yield` for multi-statement arms, exhaustiveness enforced over enums/sealed types.
+- **Text blocks (Java 15):** `"""..."""` multi-line strings, incidental whitespace auto-stripped. Verified clean JSON-shaped output.
+- **Virtual threads (Java 21), overview level:** JVM-managed, NOT 1:1 with OS threads — millions possible vs thousands for platform threads. `Executors.newVirtualThreadPerTaskExecutor()`. Verified: 10,000 concurrent tasks all completed; unstarted virtual thread toString = `VirtualThread[#10023]/new` (genuinely distinct thread type). Mechanism: blocking on I/O unmounts from carrier OS thread, mounts a different virtual thread — ordinary blocking code, JVM handles scaling. Solves Module 23's Executors thread-count caution for I/O-bound work specifically (not CPU-bound).
+- **PHP:** no analogue for sealed types/record deconstruction/exhaustive switch. PHP 8.1 readonly+promotion ≈ partial records; PHP 8's `match` ≈ switch expressions closely.
+
+**PHASE 7 COMPLETE** (Modules 27-28: I/O & serialization, Modern Java 11-21).

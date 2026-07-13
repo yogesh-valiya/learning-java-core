@@ -52,7 +52,7 @@
 
 ### Phase 7 — Rounding out · ~3 sessions
 - [x] 27. I/O & serialization — File/stream I/O, NIO basics, Serializable/transient pitfalls · **[M]**
-- [ ] 28. Modern Java 11–21 — var, records, sealed classes, pattern matching, switch expressions, text blocks, virtual threads (overview) · **[M]** · increasingly asked
+- [x] 28. Modern Java 11–21 — var, records, sealed classes, pattern matching, switch expressions, text blocks, virtual threads (overview) · **[M]** · increasingly asked
 
 ### Phase 8 — Interview consolidation · ~2 sessions
 - [ ] 29. Rapid-fire "X vs Y" + coding drills + Java-8-vs-modern talking points + prep to start the Spring Boot project · **[H]**
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 27 — I/O & serialization (byte vs char streams, java.io as Decorator pattern, NIO.2 Path/Files as modern default verified against decorator-chain read, transient defaulting verified, NotSerializableException-at-runtime verified, deserialization-bypasses-constructors caution).
-- **Next up:** Module 28 — Modern Java 11-21 (var, records, sealed classes, pattern matching, switch expressions, text blocks, virtual threads overview)
-- **Sessions done:** 27
+- **Just finished:** Module 28 — Modern Java 11-21 (var static typing verified, record compact-constructor validation verified, sealed+exhaustive-switch+record-deconstruction verified, text blocks verified, virtual threads verified at 10,000 concurrent tasks). **PHASE 7 COMPLETE.**
+- **Next up:** Module 29 — Rapid-fire "X vs Y" + coding drills + Java-8-vs-modern talking points + prep to start the Spring Boot project — FINAL module of the course
+- **Sessions done:** 28
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -204,3 +204,8 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - transient fields get their DEFAULT value on deserialization, never the original — verified live
 - NotSerializableException for an unmarked non-Serializable field fires at RUNTIME not compile time — verified live (Thread field)
 - Deserialization bypasses constructors entirely — zero invariant/defensive-copy protection against a crafted byte stream; real reason modern code avoids Serializable for untrusted input
+- var is local-only and STILL statically typed (inferred concrete type, fixed forever) — not PHP-style dynamic typing
+- Record compact constructor validates without restating field assignments; records implicitly final + extend java.lang.Record but CAN implement interfaces
+- Sealed classes/interfaces fix the permitted-subtype set at compile time, enabling compiler-checked EXHAUSTIVE switch (no default needed) — generalizes Module 9's enum-completeness guarantee
+- Switch pattern matching (Java 21) destructures records directly in the case label; switch expressions (Java 14) use -> with no fall-through, yield for multi-statement arms
+- Virtual threads are JVM-managed, not 1:1 with OS threads — millions possible; solves I/O-bound thread-per-request scaling without reactive rewrites, does NOT help CPU-bound work
