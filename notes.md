@@ -299,3 +299,18 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **PHP:** `usort`/`uasort` callback ≈ Comparator, but no Comparable-style natural-order convention, and no fail-fast iteration concept at all.
 
 **PHASE 2 COMPLETE** (Modules 11-15: Generics, Collections overview, HashMap internals, Set/Map variants, Comparable/Comparator + iterators).
+
+---
+
+## Module 16 — Lambdas & Functional Interfaces
+
+- **Functional interface** = exactly one abstract method (SAM); `@FunctionalInterface` enforces it at compile time (optional, not required for lambdas to work).
+- **Lambda vs anonymous class — 2 real differences (not just syntax):**
+  - Compilation: anonymous class → own `.class` file at compile time (`Outer$1.class`); lambda → `invokedynamic` + `LambdaMetafactory`, generated at runtime, no per-lambda `.class` file.
+  - **`this` binding:** lambda's `this` = the ENCLOSING instance (lexical, no new scope); anonymous class gets its OWN `this`. Verified: `this.getClass().getSimpleName()` inside a lambda printed the enclosing class name; inside an anonymous class it printed **empty** (anonymous classes have no simple name at all, even reflectively).
+  - Captured-variable rule is identical to Module 10 (effectively final locals = frozen copy; outer fields = live read).
+- **4 core interfaces:** `Function<T,R>.apply`, `Predicate<T>.test`, `Consumer<T>.accept`, `Supplier<T>.get`.
+- **Chaining:** `andThen` = receiver runs FIRST, then argument. `compose` = argument runs FIRST, then receiver. `Predicate.and/or/negate`.
+- **Primitive specializations** (`IntPredicate`, `ToIntFunction`, etc.) avoid autoboxing — same cost Module 3 warned about, now showing up in `java.util.function`.
+- **4 method-reference kinds:** static (`Integer::parseInt`), bound-instance (`System.out::println` — receiver fixed, param = argument), **unbound-instance** (`String::toUpperCase` — param BECOMES the receiver, easy to mix up with static), constructor (`ArrayList::new`).
+- **PHP:** closures capture via explicit `use($x)`; no equivalent of the lambda/anonymous-class `this`-binding split since PHP only has one way to define inline behavior.

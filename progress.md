@@ -32,7 +32,7 @@
 - [x] 15. Comparable vs Comparator, sorting; iterators, fail-fast vs fail-safe · **[H]**
 
 ### Phase 3 — Modern functional Java · ~4 sessions
-- [ ] 16. Lambdas & functional interfaces (Function/Predicate/Consumer/Supplier) + method references · **[H]**
+- [x] 16. Lambdas & functional interfaces (Function/Predicate/Consumer/Supplier) + method references · **[H]**
 - [ ] 17. Streams API — map/filter/reduce, Collectors (groupingBy/joining/toMap), flatMap, parallel · **[H]**
 - [ ] 18. Optional — right usage, avoiding null, common mistakes · **[M]**
 - [ ] 19. Date/Time API (java.time) — LocalDate/Time, Duration/Period, formatting · **[M]**
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 15 — Comparable vs Comparator, sorting, iterators, fail-fast vs fail-safe (TreeSet's compareTo-exclusively-not-equals gotcha, TimSort stability, modCount/CME mechanism). **PHASE 2 COMPLETE.**
-- **Next up:** Module 16 — Lambdas & functional interfaces (Function/Predicate/Consumer/Supplier) + method references — start of Phase 3
-- **Sessions done:** 15
+- **Just finished:** Module 16 — Lambdas & functional interfaces (SAM rule, lambda vs anonymous-class `this`-binding + compilation differences, 4 core functional interfaces + chaining, 4 kinds of method references).
+- **Next up:** Module 17 — Streams API (map/filter/reduce, Collectors: groupingBy/joining/toMap, flatMap, parallel)
+- **Sessions done:** 16
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -146,3 +146,7 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - Iterator.remove() (or removeIf) is the only safe way to remove mid-iteration
 - Fail-fast (modCount + ConcurrentModificationException) = best-effort bug detection, NOT a correctness guarantee
 - Fail-safe (CopyOnWriteArrayList, ConcurrentHashMap) trades CME-freedom for possibly-stale iteration
+- Lambda 'this' = enclosing instance (lexical); anonymous class 'this' = its own instance (verified: getSimpleName() empty for anonymous, enclosing class name for lambda)
+- Lambdas compile via invokedynamic/LambdaMetafactory at runtime, not a .class file per lambda like anonymous classes
+- andThen = receiver runs first, then argument; compose = argument runs first, then receiver
+- Unbound-instance method reference (String::toUpperCase) — the lambda's parameter BECOMES the receiver, easy to confuse with a static reference
