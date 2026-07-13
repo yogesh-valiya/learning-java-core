@@ -284,3 +284,18 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **Demo confirms:** HashSet order is neither insertion nor sorted (pure hash/bucket layout) — proof there's truly no ordering guarantee.
 - **When to use which:** don't care about order → Hash*; need insertion order → LinkedHash*; need sorted/range queries → Tree*; need LRU → LinkedHashMap(accessOrder=true).
 - **PHP:** arrays are always insertion-ordered by default — no PHP equivalent of choosing between unordered/insertion-ordered/sorted as distinct types with different cost tradeoffs.
+
+---
+
+## Module 15 — Comparable vs Comparator; Iterators, Fail-Fast vs Fail-Safe
+
+- **Comparable** (`compareTo`) = one natural order, defined INSIDE the class. **Comparator** (`compare`) = external, pluggable order(s), defined OUTSIDE — any number per type, functional interface.
+- **Modern chaining idiom:** `Comparator.comparing(Person::lastName).thenComparing(Person::firstName)`; also `.reversed()`, `naturalOrder()`/`reverseOrder()`, `nullsFirst`/`nullsLast`.
+- **⚠️ Sharpest gotcha:** sorted collections (`TreeSet`/`TreeMap`) decide "duplicate" via **`compareTo`/`compare` == 0 EXCLUSIVELY** — `equals()`/`hashCode()` are never consulted. Two clearly-different (`!equals`) objects that tie under the comparator **silently collapse into one entry**. Measured: two different `Person`s with the same age, in a `TreeSet<Person>` ordered by age → size 1, not 2.
+- **Sort stability:** object sort (`Collections.sort`/`List.sort`) = modified **TimSort**, O(n log n), **stable**. Primitive `Arrays.sort` = dual-pivot quicksort, **not stable** (moot — primitives have no identity beyond value).
+- **`Iterator.remove()`** = the only safe way to remove mid-iteration (updates iterator's own bookkeeping). Modern equivalent: `list.removeIf(condition)`.
+- **Fail-fast:** `modCount` incremented on every structural change; iterator checks `expectedModCount` on each `next()`, throws `ConcurrentModificationException` on mismatch — **best-effort bug detection, NOT a correctness guarantee**. Classic bug: `for(x : list) list.remove(x)` → CME. Fix: `Iterator.remove()` or `removeIf`.
+- **Fail-safe:** `CopyOnWriteArrayList`, `ConcurrentHashMap` iterators — snapshot/weakly-consistent traversal, never throws CME, but may not reflect the very latest concurrent changes. (Full depth in Phase 5.)
+- **PHP:** `usort`/`uasort` callback ≈ Comparator, but no Comparable-style natural-order convention, and no fail-fast iteration concept at all.
+
+**PHASE 2 COMPLETE** (Modules 11-15: Generics, Collections overview, HashMap internals, Set/Map variants, Comparable/Comparator + iterators).

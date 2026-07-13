@@ -29,7 +29,7 @@
 - [x] 12. Collections overview — List/Set/Queue/Map hierarchy; ArrayList vs LinkedList · **[H]**
 - [x] 13. HashMap internals — buckets, hashing, treeify (Java 8), resize, load factor · **[H]** · the #1 internals Q
 - [x] 14. Set/Map variants — HashSet, LinkedHashMap, TreeMap; when to use which · **[H]**
-- [ ] 15. Comparable vs Comparator, sorting; iterators, fail-fast vs fail-safe · **[H]**
+- [x] 15. Comparable vs Comparator, sorting; iterators, fail-fast vs fail-safe · **[H]**
 
 ### Phase 3 — Modern functional Java · ~4 sessions
 - [ ] 16. Lambdas & functional interfaces (Function/Predicate/Consumer/Supplier) + method references · **[H]**
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 14 — Set/Map variants (HashSet as HashMap wrapper, LinkedHashSet/LinkedHashMap insertion/access order + LRU cache pattern, TreeSet/TreeMap guaranteed O(log n) + navigation methods, null handling).
-- **Next up:** Module 15 — Comparable vs Comparator, sorting; iterators, fail-fast vs fail-safe
-- **Sessions done:** 14
+- **Just finished:** Module 15 — Comparable vs Comparator, sorting, iterators, fail-fast vs fail-safe (TreeSet's compareTo-exclusively-not-equals gotcha, TimSort stability, modCount/CME mechanism). **PHASE 2 COMPLETE.**
+- **Next up:** Module 16 — Lambdas & functional interfaces (Function/Predicate/Consumer/Supplier) + method references — start of Phase 3
+- **Sessions done:** 15
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -139,3 +139,10 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - LinkedHashMap threads a doubly-linked list through the same hash nodes; accessOrder=true + removeEldestEntry override = LRU cache
 - TreeSet/TreeMap are a real always-on red-black tree — genuinely guaranteed O(log n) since Comparable/Comparator is mandatory (unlike HashMap's best-effort treeify)
 - TreeMap/TreeSet reject null (NPE on compareTo); HashMap/HashSet allow one null key
+- Comparable (compareTo) = one natural order, in the class; Comparator (compare) = external, pluggable, any number per type
+- Comparator chaining idiom: comparing().thenComparing().reversed() — know this syntax cold
+- Sorted collections (TreeSet/TreeMap) use compareTo/compare EXCLUSIVELY for equality, not equals/hashCode — mismatched, entries silently collapse (measured: 2 different Persons, same age -> TreeSet size 1)
+- Object sort (TimSort) is stable; primitive Arrays.sort (dual-pivot quicksort) is not, but stability is moot for primitives
+- Iterator.remove() (or removeIf) is the only safe way to remove mid-iteration
+- Fail-fast (modCount + ConcurrentModificationException) = best-effort bug detection, NOT a correctness guarantee
+- Fail-safe (CopyOnWriteArrayList, ConcurrentHashMap) trades CME-freedom for possibly-stale iteration
