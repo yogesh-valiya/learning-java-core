@@ -435,3 +435,18 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **⚠️ Genuine accident, kept as a lesson:** an OOM-handling `catch` block that tries to `println` immediately can itself throw a SECOND `OutOfMemoryError` (the println needs to allocate a String, and there's no heap left) — verified this crashed the demo on the first attempt. Fix: release held memory (`holder.clear(); holder=null;`) BEFORE any further allocation in the handler.
 - **Tuning:** `-Xms`/`-Xmx` (heap size), `-XX:+UseG1GC` (collector choice), `-XX:MaxMetaspaceSize`, `-XX:+HeapDumpOnOutOfMemoryError` (auto heap dump on OOM — standard first debugging step).
 - **PHP:** per-request refcounting + cycle collector scopes memory to the request by default — most of these leak patterns (growing static cache, ThreadLocal-on-pooled-thread) have no direct PHP equivalent.
+
+---
+
+## Module 26 — Class Loading, Reflection & Annotations
+
+- **Classloader delegation:** Bootstrap → Platform → Application, PARENT-FIRST (why user code can't shadow `java.lang.String`). Classes load LAZILY on first active use. Phases: Loading → Linking (verify/prepare-defaults/resolve) → Initialization (static blocks run — Module 5 callback).
+- **`ClassNotFoundException`** (file genuinely missing) vs **`NoClassDefFoundError`** (class WAS available, failed to init). VERIFIED: a class with a static initializer that divides by zero threw `ExceptionInInitializerError` (wrapping the real `ArithmeticException`) on 1st reference, then `NoClassDefFoundError` on the 2nd — JVM marks the class erroneous permanently after first failure, never retries.
+- **`getFields()`/`getMethods()`** = public + INHERITED. **`getDeclaredFields()`/`getDeclaredMethods()`** = everything declared directly here (private included), NOT inherited. VERIFIED fully disjoint on a Base/Derived pair: getFields()→[basePublicField], getDeclaredFields()→[secret].
+- **`setAccessible(true)`** bypasses access checks — VERIFIED reading+overwriting a private field from outside the class. **This is literally how Spring/Jackson/JUnit work** (inject private fields, deserialize private fields, invoke @Test methods) — no extra magic beyond this + annotations. Real costs: slower than direct calls; increasingly JPMS-restricted against JDK internals.
+- **`@Retention`:** `SOURCE` (compiler-only) / `CLASS` (bytecode, NOT reflectively visible — the DEFAULT if omitted) / `RUNTIME` (reflectively visible — REQUIRED for any framework to detect it). VERIFIED: identical `isAnnotationPresent()` check returned `true` for a RUNTIME-retention annotation, `false` for a default-retention one on an otherwise-identical setup — retention policy is the only variable.
+- **`@Target`** restricts legal placement; **`@Inherited`** = class-level annotations only, inherited by subclasses; **`@Documented`** = shows in Javadoc.
+- **The scan→detect→invoke pattern** (`isAnnotationPresent`+`getAnnotation`+reflective invoke) IS mechanically how Spring finds `@Component`/`@Autowired`, JUnit finds `@Test`, JPA finds `@Entity` — direct bridge to the upcoming Spring project.
+- **PHP:** 8's attributes (`#[Attribute]`) are the direct structural equivalent, used by Symfony/Doctrine the same way.
+
+**PHASE 6 COMPLETE** (Modules 25-26: Memory model & GC, Class loading/reflection/annotations).

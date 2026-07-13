@@ -48,7 +48,7 @@
 
 ### Phase 6 — JVM under the hood · ~3 sessions
 - [x] 25. Memory model & GC — heap/stack, generations, GC algorithms, memory leaks, OOM, basic tuning · **[H]** · expected for experienced roles
-- [ ] 26. Class loading, reflection & annotations (create + process) · **[M]** · annotations bridge to Spring
+- [x] 26. Class loading, reflection & annotations (create + process) · **[M]** · annotations bridge to Spring
 
 ### Phase 7 — Rounding out · ~3 sessions
 - [ ] 27. I/O & serialization — File/stream I/O, NIO basics, Serializable/transient pitfalls · **[M]**
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 25 — Memory model & GC (heap/stack/Metaspace, StackOverflowError verified at 16,118 frames, generational GC hypothesis, GC algorithm landscape, memory leak patterns despite GC, heap OOM verified under -Xmx32m + the OOM-handler-itself-OOMing lesson, basic tuning flags).
-- **Next up:** Module 26 — Class loading, reflection & annotations (create + process) — annotations bridge to Spring
-- **Sessions done:** 25
+- **Just finished:** Module 26 — Class loading, reflection & annotations (classloader delegation, ClassNotFoundException vs NoClassDefFoundError verified, getFields vs getDeclaredFields verified, setAccessible private access verified, @Retention RUNTIME-vs-CLASS reflective visibility verified — direct bridge to how Spring/JUnit/Jackson work). **PHASE 6 COMPLETE.**
+- **Next up:** Module 27 — I/O & serialization (File/stream I/O, NIO basics, Serializable/transient pitfalls) — start of Phase 7 (Rounding out)
+- **Sessions done:** 26
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -194,3 +194,8 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - Generational hypothesis: young gen (Eden+Survivor) -> frequent cheap Minor GC; old gen (promoted via age counter) -> rare expensive Major/Full GC. G1 = default collector since Java 9
 - A GC only reclaims TRULY unreachable objects — a "memory leak" in Java is unintentional reachability (unbounded static caches, unremoved listeners, ThreadLocal on pooled threads), not a different mechanism than C-style leaks
 - Verified real heap OutOfMemoryError under -Xmx32m; discovered live that an OOM catch-block's own println can throw a SECOND OOM if it allocates before freeing held memory first
+- Classloader delegation is parent-first (bootstrap->platform->application); classes load lazily on first active use
+- ClassNotFoundException (file missing) vs NoClassDefFoundError (was available, failed to init) — verified 1st ref throws ExceptionInInitializerError, 2nd ref throws NoClassDefFoundError, JVM never retries a failed class
+- getFields()/getMethods() = public+inherited; getDeclaredFields()/getDeclaredMethods() = all declared here (private included), not inherited — verified fully disjoint on a Base/Derived pair
+- setAccessible(true) bypasses access checks — literally how Spring/Jackson/JUnit work (inject/deserialize/invoke private members); real perf cost, increasingly JPMS-restricted
+- @Retention(RUNTIME) required for reflective visibility (isAnnotationPresent/getAnnotation) — default CLASS retention is invisible to reflection — verified identical check returns true vs false based purely on retention policy
