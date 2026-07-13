@@ -44,7 +44,7 @@
 - [x] 21. Threads — lifecycle, Runnable vs Callable, core methods · **[H]**
 - [x] 22. Synchronization & memory model — synchronized, volatile, race conditions, deadlock, wait/notify · **[H]** · big separator
 - [x] 23. Executors & thread pools — ExecutorService, Future, CompletableFuture, pool types · **[H]**
-- [ ] 24. Concurrent collections, atomics & locks — ConcurrentHashMap, BlockingQueue, ReentrantLock, atomics · **[H]**
+- [x] 24. Concurrent collections, atomics & locks — ConcurrentHashMap, BlockingQueue, ReentrantLock, atomics · **[H]**
 
 ### Phase 6 — JVM under the hood · ~3 sessions
 - [ ] 25. Memory model & GC — heap/stack, generations, GC algorithms, memory leaks, OOM, basic tuning · **[H]** · expected for experienced roles
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 23 — Executors & thread pools (ExecutorService vs raw Threads, execute-vs-submit exception gotcha measured both ways, shutdown lifecycle + RejectedExecutionException verified, CompletableFuture chaining/thenCombine/exceptionally verified).
-- **Next up:** Module 24 — Concurrent collections, atomics & locks (ConcurrentHashMap, BlockingQueue, ReentrantLock, atomics)
-- **Sessions done:** 23
+- **Just finished:** Module 24 — Concurrent collections, atomics & locks (ConcurrentHashMap fine-grained locking + no-null design, check-then-act race measured (75% lost) vs merge() fix, AtomicInteger/CAS verified correct under the same race, BlockingQueue producer-consumer, ReentrantLock tryLock verified blocked/released). **PHASE 5 COMPLETE.**
+- **Next up:** Module 25 — Memory model & GC (heap/stack, generations, GC algorithms, memory leaks, OOM, basic tuning) — start of Phase 6 (JVM under the hood)
+- **Sessions done:** 24
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -186,3 +186,7 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - Executors factories hide unbounded queue/thread growth (newFixedThreadPool = unbounded queue, newCachedThreadPool = unbounded threads) — prefer explicit ThreadPoolExecutor in production
 - Forgetting ExecutorService.shutdown() keeps the JVM alive forever (pool threads aren't daemons by default); post-shutdown submit() throws RejectedExecutionException
 - CompletableFuture: thenApply (transform) vs thenCompose (flatMap, for a step returning its own CompletableFuture) vs thenCombine (merge 2 independent futures); exceptionally recovers with a fallback value
+- ConcurrentHashMap: fine-grained locking (not one global lock); weakly consistent iterators (never CME); no null keys/values (removes get()==null ambiguity in concurrent code)
+- Thread-safe data structure != atomic compound operation — measured manual check-then-act on ConcurrentHashMap lost 75% of updates (24976/100000); map.merge() got exactly 100000
+- Atomics (AtomicInteger etc) use CAS (compare-and-swap, optimistic, lock-free retry) vs synchronized's pessimistic blocking — measured AtomicInteger got exactly 100000 on the same race
+- ReentrantLock adds tryLock/tryLock(timeout)/lockInterruptibly/fairness over synchronized, but requires manual unlock() in finally (synchronized releases automatically) — verified tryLock false while held, true after release
