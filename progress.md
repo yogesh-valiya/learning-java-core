@@ -35,7 +35,7 @@
 - [x] 16. Lambdas & functional interfaces (Function/Predicate/Consumer/Supplier) + method references · **[H]**
 - [x] 17. Streams API — map/filter/reduce, Collectors (groupingBy/joining/toMap), flatMap, parallel · **[H]**
 - [x] 18. Optional — right usage, avoiding null, common mistakes · **[M]**
-- [ ] 19. Date/Time API (java.time) — LocalDate/Time, Duration/Period, formatting · **[M]**
+- [x] 19. Date/Time API (java.time) — LocalDate/Time, Duration/Period, formatting · **[M]**
 
 ### Phase 4 — Exceptions · ~2 sessions
 - [ ] 20. Exception handling — checked vs unchecked, try-with-resources, custom exceptions, finally semantics, best practices · **[H]**
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 18 — Optional (return-type-only design intent, of/ofNullable/empty, orElse-vs-orElseGet eagerness gotcha, common misuses, chaining refactor).
-- **Next up:** Module 19 — Date/Time API (java.time) — LocalDate/Time, Duration/Period, formatting
-- **Sessions done:** 18
+- **Just finished:** Module 19 — Date/Time API (why java.time replaced Date/Calendar, core types, Duration-vs-Period calendar-clamping proof, immutability, DateTimeFormatter vs SimpleDateFormat thread-safety). **PHASE 3 COMPLETE.**
+- **Next up:** Module 20 — Exception handling (checked vs unchecked, try-with-resources, custom exceptions, finally semantics, best practices) — start of Phase 4
+- **Sessions done:** 19
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -160,3 +160,8 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - orElse(x) evaluates x eagerly always; orElseGet(supplier) only invokes on empty — measured: orElse ran an "expensive" call even when present, orElseGet did not
 - isPresent()+get() is a null-check with extra steps — use map/filter/orElse/orElseThrow/ifPresentOrElse instead
 - Never wrap a collection in Optional (Optional<List<T>>) — return an empty collection instead
+- java.time replaced Date/Calendar for immutability, thread-safety, and fixing 0-indexed months
+- Duration (time-based, exact) vs Period (date-based, calendar-aware) — NOT interchangeable: measured Period.ofMonths(1) on Jan 31 clamps to Feb 28, Duration.ofDays(1) gives a fixed 24h (Feb 1)
+- java.time types are immutable, same reassignment discipline as String
+- DateTimeFormatter is thread-safe; old SimpleDateFormat is NOT (shared instance across threads silently corrupts results)
+- ChronoUnit.between = single-unit raw count; Period.between = full calendar breakdown (years+months+days)

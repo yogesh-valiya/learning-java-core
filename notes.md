@@ -340,3 +340,17 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **Common mistakes:** Optional as a field or method parameter (not Serializable, awkward for callers — return-type only); `.get()` without checking → `NoSuchElementException` (same crash pattern, new name); wrapping a collection in Optional (`Optional<List<T>>`) — just return an empty collection instead.
 - **Good use:** chained `map()` calls replace nested null-check pyramids, short-circuiting to `orElse(default)` cleanly.
 - **PHP:** nullsafe `?->` (PHP 8) covers chained access but is a language-level null-propagation operator, not a distinct type — doesn't force a signature to declare possible absence. No standard Optional/Option type in PHP.
+
+---
+
+## Module 19 — Date/Time API (java.time)
+
+- **Why it exists:** old `Date`/`Calendar` = mutable, not thread-safe, 0-indexed months (`Calendar.JANUARY==0`). Java 8's `java.time` (JSR-310) = immutable, thread-safe, unambiguous. **Months are 1-indexed** here.
+- **Core types, one concept each:** `LocalDate` (date only), `LocalTime` (time only), `LocalDateTime` (date+time, no zone), `ZonedDateTime` (date+time+zone), `Instant` (UTC-timeline point, machine timestamp).
+- **⭐ Duration (time-based, exact) vs Period (date-based, calendar-aware):** NOT interchangeable. Measured: `Period.ofMonths(1)` added to Jan 31 2026 → **Feb 28** (clamped to calendar). `Duration.ofDays(1)` (fixed 24h) added to Jan 31 09:00 → **Feb 1, 09:00**. Same "1 unit," genuinely different results.
+- **Immutability = same rule as String (Module 4):** `plusDays`/`withYear`/etc. return a NEW instance; forgetting to reassign is a silent no-op.
+- **`DateTimeFormatter`** is immutable/thread-safe (safe as shared `static final`) — fixes a REAL bug in old `SimpleDateFormat`, which is mutable and NOT thread-safe (shared instance across threads → silently corrupted parse/format results, not a crash).
+- **`ChronoUnit.DAYS.between(a,b)`** = single-unit raw count. **`Period.between(a,b)`** = full calendar breakdown (years+months+days).
+- **PHP:** `DateTime` (mutable mistake) vs `DateTimeImmutable` (the fix) mirrors this exactly; `DateInterval` ≈ Duration+Period combined.
+
+**PHASE 3 COMPLETE** (Modules 16-19: Lambdas & functional interfaces, Streams API, Optional, Date/Time API).
