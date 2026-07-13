@@ -27,7 +27,7 @@
 ### Phase 2 — Generics & Collections (interview core) · ~5 sessions
 - [x] 11. Generics — bounded types, wildcards (`? extends`/`? super`), PECS, type erasure · **[H]**
 - [x] 12. Collections overview — List/Set/Queue/Map hierarchy; ArrayList vs LinkedList · **[H]**
-- [ ] 13. HashMap internals — buckets, hashing, treeify (Java 8), resize, load factor · **[H]** · the #1 internals Q
+- [x] 13. HashMap internals — buckets, hashing, treeify (Java 8), resize, load factor · **[H]** · the #1 internals Q
 - [ ] 14. Set/Map variants — HashSet, LinkedHashMap, TreeMap; when to use which · **[H]**
 - [ ] 15. Comparable vs Comparator, sorting; iterators, fail-fast vs fail-safe · **[H]**
 
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 12 — Collections overview (Iterable/Collection/List/Set/Queue/Deque hierarchy, Map kept separate, implementations map, ArrayList vs LinkedList internals + measured `get(i)`-loop anti-pattern, RandomAccess marker).
-- **Next up:** Module 13 — HashMap internals (buckets, hashing, treeify (Java 8), resize, load factor) — the #1 internals Q
-- **Sessions done:** 12
+- **Just finished:** Module 13 — HashMap internals (bucket indexing/bitmask, hash spreading, treeification + its real limits, resize/load-factor mechanics, pre-sizing).
+- **Next up:** Module 14 — Set/Map variants (HashSet, LinkedHashMap, TreeMap; when to use which)
+- **Sessions done:** 13
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -127,3 +127,11 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - `get(i)` loop over LinkedList = O(n²) anti-pattern (measured ~318x slower than iterator) — always for-each/iterator unless RandomAccess is guaranteed
 - Modern default: prefer ArrayList almost always; prefer ArrayDeque over LinkedList for real queue/stack/deque use
 - Casting a Queue reference to List for index access is a smell — only works if the concrete class implements both; breaks on ArrayDeque
+- HashMap bucket index = (capacity-1) & hash (bitmask, not modulo) — requires power-of-two capacity
+- hash() spreading (h ^ h>>>16) folds high bits down since bucket indexing only reads low bits
+- Treeify at 8 entries + capacity>=64 — defense against bad/malicious hashCode, not normal-case behavior
+- Treeification needs a real ordering signal (differing hashes or Comparable) — constant hashCode for every key still degrades far past O(log n)
+- Constant-but-consistent bad hashCode = performance bug; inconsistent hashCode = correctness bug (silently unreachable entries)
+- Load factor 0.75 = space/time tradeoff; resize doubles capacity, splits buckets via one new bit (lo/hi), no full rehash
+- new HashMap<>(n) rounds UP to next power of two (tableSizeFor)
+- Pre-size HashMap when count is known to skip resize-copy cascade — benchmark via separate JVM processes, not in-process back-to-back (JIT/GC bleed gives unreliable results)

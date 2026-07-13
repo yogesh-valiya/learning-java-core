@@ -251,3 +251,22 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **Modern default: prefer ArrayList almost always** (cache locality wins in practice, even for insert-heavy workloads). For real queue/stack/deque needs, **prefer `ArrayDeque` over `LinkedList`** (circular array, no node overhead) — LinkedList rarely the right default anymore.
 - **Gotcha:** casting a `Queue` reference to `List` to get index access (`((List<Job>) jobs).get(i)`) only works because `LinkedList` happens to implement both. Swap to `ArrayDeque` (the modern recommendation) → `ClassCastException` at runtime. The cast itself is the smell — use `Queue`'s own methods (`poll()`/`peek()`) or a plain iterator instead.
 - **PHP:** one array type blurs list/set/map/queue into one hybrid structure; Java's split means the declared interface is a real contract (a `List` promises meaningful indexing, a `Queue` doesn't). No PHP equivalent of `RandomAccess`.
+
+---
+
+## Module 13 — HashMap Internals ⭐ THE #1 internals question
+
+- **Structure:** array of buckets (`Node<K,V>[] table`). `put`/`get` = compute bucket from hash, then `equals()`-scan within that bucket.
+- **Bucket index = bitmask, not modulo:** `(capacity-1) & hash`. Only works because capacity is **always a power of two** — a mask is only equivalent to modulo when it's a contiguous run of 1-bits. Non-power-of-two capacity → some indices become mathematically unreachable.
+- **`hash()` spreading:** `h ^ (h >>> 16)` — folds high bits down since bucket indexing only reads low bits; defends against hashCodes that differ mainly in high bits. Can't fix hashes already close in the low bits (e.g. 1 vs 17 still collide at capacity 16).
+- **Collision handling:** pre-Java-8 = linked list per bucket (O(n) worst case). Java 8+ **treeifies** a bucket into a red-black tree at **8 entries** (`TREEIFY_THRESHOLD`), but only if capacity ≥ **64** (`MIN_TREEIFY_CAPACITY`) — else resizes instead. Un-treeifies at ≤6 during a resize.
+- **Why 8:** Poisson-distribution argument in the JDK source — a healthy hash function almost never produces a bucket that large. Treeification = defense against a bad/malicious hashCode (hash-flooding), not normal-case behavior.
+- **Tree ordering:** compares `hash` first (real signal) → `Comparable` if available → else a class-name/identity-hash tiebreak (keeps the tree valid, but has NO relation to the keys, so can't prune a search).
+- **Key nuance:** a hashCode that's **constant** for every key still gets treeified, but degrades **far past O(log n)** (measured: per-lookup cost roughly doubles-to-sextuples every time n doubles) — because there's no real ordering signal, only the meaningless tiebreak. Treeification defends ordinary bucket collisions (different hashes, same bucket via mask truncation), NOT a hashCode that's constant for every input.
+- **Contract distinction:** constant-but-consistent bad hashCode = **performance** bug only (contract intact — consistent, equal keys share a hash). **Inconsistent** hashCode (varies per call for the same key) = **correctness** bug — put/get compute different buckets, entry becomes silently unreachable. Don't conflate the two.
+- **Real defense against pathological hashing:** write an actual hashCode() (combine fields with a multiplier, or `Objects.hash(...)`) so colliding buckets still have differing hash *values* for the tree to sort by.
+- **Resizing:** default capacity 16, default load factor **0.75**, threshold = capacity×loadFactor. Load factor 0.75 = space/time tradeoff (too high → deep buckets before resize; too low → wasteful, too-eager resizing).
+- **Java 8 resize optimization:** new capacity is always exactly 2× old, so the mask gains exactly one new bit. Each entry's new bucket is either its old index or `oldIndex+oldCapacity`, decided by that one new bit — resize splits each bucket into lo/hi lists and relinks, no full rehash needed.
+- **`tableSizeFor`:** initial-capacity constructor arg always rounds **up** to the next power of two (`new HashMap<>(50)` → capacity 64).
+- **Practical tip:** pre-size (`new HashMap<>((int)(n/0.75f)+1)`) when the count is known upfront — skips the resize-copy cascade. (Measure this via **separate JVM processes**, not back-to-back in one process — in-process timing let JIT/GC state bleed between configs and gave backwards results.)
+- **PHP:** array/hashtable hybrid exposes none of this — no capacity, no load factor, no visible resize policy. Java makes every tradeoff explicit and tunable.
