@@ -235,3 +235,19 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
   - No class `T` inside `static` members (static belongs to the class, not a parameterized instance).
   - **Bridge methods:** compiler auto-generates a synthetic erased-signature overload (e.g. `compareTo(Object)`) so polymorphism survives erasure when you override with a narrower type (`compareTo(MyType)`). Visible via `javap -p`.
 - **Raw types (no `<>`):** opt completely out of generics checking — legal only for backward compat, **never use in new code**. `Box raw = new Box("x"); raw.set(42);` compiles (erasure = `Object` param). Assigning raw → parameterized ref = unchecked warning but compiles. The `ClassCastException` fires **at the read site** (compiler-inserted cast based on the *reference's* declared type), NOT where the bad value was stored — same "failure far from cause" problem generics exist to prevent, snuck back in.
+
+---
+
+## Module 12 — Collections Overview ⭐ high-frequency
+
+- **Hierarchy:** `Iterable` → `Collection` → `List` / `Set` / `Queue` (→ `Deque`). **`Map` is separate — does NOT extend `Collection`** (pairs vs. single elements, different shape, not a missing feature). Map exposes `keySet()`→`Set<K>`, `values()`→`Collection<V>`, `entrySet()`→`Set<Map.Entry<K,V>>` to plug back into the Collection world.
+- **`Set`'s uniqueness = `equals()`/`hashCode()` contract (Module 7), not interface magic.** Broken contract on your class → `HashSet` silently keeps "duplicates."
+- **Implementations map:** List→ArrayList/LinkedList/Vector; Set→HashSet/LinkedHashSet/TreeSet; Queue/Deque→ArrayDeque/LinkedList/PriorityQueue; Map→HashMap/LinkedHashMap/TreeMap.
+- **`LinkedList` implements BOTH `List` and `Deque`** simultaneously — genuinely dual-purpose, not just a list.
+- **ArrayList:** resizable `Object[]`. `get(index)`=O(1). `add` at end=amortized O(1) (resize at **1.5×** cap, `Arrays.copyOf`, default cap 10). Middle insert/remove=O(n) (`arraycopy` shift). Cache-friendly (contiguous memory).
+- **LinkedList:** doubly-linked `Node{prev,item,next}`. Ends (`addFirst/Last`, `removeFirst/Last`)=O(1). `get(index)`=O(n) (walks from nearer end, avg n/4). Index-based middle insert=**still O(n) overall** — traversal to reach the spot dominates. **True O(1) insert ONLY via an already-positioned `ListIterator`** — not "inserting at index N is fast." Heavier memory/element (node+2 refs+header). Poor cache locality (scattered nodes, pointer chasing).
+- **`RandomAccess` marker:** `ArrayList` implements it, `LinkedList` doesn't. JDK algorithms (`Collections.binarySearch`) check `instanceof RandomAccess` to pick index-loop vs iterator strategy.
+- **`get(i)`-loop anti-pattern:** looping `for(i=0;i<list.size();i++) list.get(i)` over a `LinkedList` = **O(n²)** (each call re-walks up to n/4 nodes, n times). Swap to for-each/iterator = O(n). **Measured: ~318× slower** on identical 40k-element data — same list, only the access pattern changed.
+- **Modern default: prefer ArrayList almost always** (cache locality wins in practice, even for insert-heavy workloads). For real queue/stack/deque needs, **prefer `ArrayDeque` over `LinkedList`** (circular array, no node overhead) — LinkedList rarely the right default anymore.
+- **Gotcha:** casting a `Queue` reference to `List` to get index access (`((List<Job>) jobs).get(i)`) only works because `LinkedList` happens to implement both. Swap to `ArrayDeque` (the modern recommendation) → `ClassCastException` at runtime. The cast itself is the smell — use `Queue`'s own methods (`poll()`/`peek()`) or a plain iterator instead.
+- **PHP:** one array type blurs list/set/map/queue into one hybrid structure; Java's split means the declared interface is a real contract (a `List` promises meaningful indexing, a `Queue` doesn't). No PHP equivalent of `RandomAccess`.

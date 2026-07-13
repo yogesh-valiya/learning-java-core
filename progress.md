@@ -26,7 +26,7 @@
 
 ### Phase 2 — Generics & Collections (interview core) · ~5 sessions
 - [x] 11. Generics — bounded types, wildcards (`? extends`/`? super`), PECS, type erasure · **[H]**
-- [ ] 12. Collections overview — List/Set/Queue/Map hierarchy; ArrayList vs LinkedList · **[H]**
+- [x] 12. Collections overview — List/Set/Queue/Map hierarchy; ArrayList vs LinkedList · **[H]**
 - [ ] 13. HashMap internals — buckets, hashing, treeify (Java 8), resize, load factor · **[H]** · the #1 internals Q
 - [ ] 14. Set/Map variants — HashSet, LinkedHashMap, TreeMap; when to use which · **[H]**
 - [ ] 15. Comparable vs Comparator, sorting; iterators, fail-fast vs fail-safe · **[H]**
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 11 — Generics (generic classes/methods, bounded types, invariance, wildcards & PECS, type erasure, bridge methods, raw-type gotcha).
-- **Next up:** Module 12 — Collections overview (List/Set/Queue/Map hierarchy; ArrayList vs LinkedList)
-- **Sessions done:** 11
+- **Just finished:** Module 12 — Collections overview (Iterable/Collection/List/Set/Queue/Deque hierarchy, Map kept separate, implementations map, ArrayList vs LinkedList internals + measured `get(i)`-loop anti-pattern, RandomAccess marker).
+- **Next up:** Module 13 — HashMap internals (buckets, hashing, treeify (Java 8), resize, load factor) — the #1 internals Q
+- **Sessions done:** 12
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -119,3 +119,11 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - Erasure consequences: no `new T()`, no `instanceof List<String>`, no generic arrays, no overload-by-type-param-only, no `T` in `static` context
 - Bridge methods: compiler-generated erased-signature overload preserving polymorphism after overriding a generic method
 - Raw types bypass all checks; the `ClassCastException` fires at the read site (compiler-inserted cast), not where the bad value was stored
+- Map does NOT extend Collection (pairs vs. single elements); reachable via keySet()/values()/entrySet()
+- Set uniqueness = equals()/hashCode() contract, not interface magic
+- LinkedList implements both List AND Deque at once — genuinely dual-purpose
+- ArrayList: O(1) get, amortized O(1) append (1.5x resize); LinkedList: O(1) at ends, O(n) get, true O(1) insert ONLY via a positioned iterator
+- RandomAccess marker interface: ArrayList has it, LinkedList doesn't; JDK algorithms branch on it
+- `get(i)` loop over LinkedList = O(n²) anti-pattern (measured ~318x slower than iterator) — always for-each/iterator unless RandomAccess is guaranteed
+- Modern default: prefer ArrayList almost always; prefer ArrayDeque over LinkedList for real queue/stack/deque use
+- Casting a Queue reference to List for index access is a smell — only works if the concrete class implements both; breaks on ArrayDeque
