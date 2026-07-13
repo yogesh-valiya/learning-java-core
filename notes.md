@@ -328,3 +328,15 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **Primitive streams** (IntStream/LongStream/DoubleStream): avoid autoboxing per element — same Module 3 cost, `mapToInt`/`mapToObj`/`.boxed()` convert at the boundary.
 - **Parallel streams:** `ForkJoinPool.commonPool()`-backed; NOT automatically faster (coordination overhead can lose to sequential on small/cheap work); shared mutable state touched inside the lambda = race condition. Full depth in Phase 5.
 - **PHP:** `array_filter`/`array_map`/`array_reduce` run eagerly, full intermediate array at each step (horizontal) — no laziness, no short-circuiting, no single-use restriction.
+
+---
+
+## Module 18 — Optional
+
+- **Purpose:** a RETURN-TYPE signal that a result might be absent — makes it visible in the signature, unlike `null`. NOT a general null-replacement.
+- **Creation:** `Optional.of(v)` throws NPE immediately if v is null (fail-fast); `Optional.ofNullable(v)` → empty instead; `Optional.empty()`.
+- **Anti-pattern:** `if (opt.isPresent()) opt.get();` = null-check with extra steps, defeats the purpose. Use `map`/`filter`/`orElse`/`orElseThrow`/`ifPresent`/`ifPresentOrElse` instead.
+- **⚠️ orElse vs orElseGet:** `orElse(x)` evaluates `x` EAGERLY, always, even when present (Java evaluates args before the call). `orElseGet(supplier)` only invokes the supplier when actually empty. Measured: `.orElse(expensiveCall())` on a PRESENT optional still ran `expensiveCall()`; `.orElseGet(() -> expensiveCall())` did not. Real perf/correctness bug, not style.
+- **Common mistakes:** Optional as a field or method parameter (not Serializable, awkward for callers — return-type only); `.get()` without checking → `NoSuchElementException` (same crash pattern, new name); wrapping a collection in Optional (`Optional<List<T>>`) — just return an empty collection instead.
+- **Good use:** chained `map()` calls replace nested null-check pyramids, short-circuiting to `orElse(default)` cleanly.
+- **PHP:** nullsafe `?->` (PHP 8) covers chained access but is a language-level null-propagation operator, not a distinct type — doesn't force a signature to declare possible absence. No standard Optional/Option type in PHP.

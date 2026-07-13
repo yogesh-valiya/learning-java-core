@@ -34,7 +34,7 @@
 ### Phase 3 — Modern functional Java · ~4 sessions
 - [x] 16. Lambdas & functional interfaces (Function/Predicate/Consumer/Supplier) + method references · **[H]**
 - [x] 17. Streams API — map/filter/reduce, Collectors (groupingBy/joining/toMap), flatMap, parallel · **[H]**
-- [ ] 18. Optional — right usage, avoiding null, common mistakes · **[M]**
+- [x] 18. Optional — right usage, avoiding null, common mistakes · **[M]**
 - [ ] 19. Date/Time API (java.time) — LocalDate/Time, Duration/Period, formatting · **[M]**
 
 ### Phase 4 — Exceptions · ~2 sessions
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 17 — Streams API (lazy pipeline + single-use, intermediate vs terminal, vertical/short-circuit processing model, map vs flatMap, reduce overloads, Collectors incl. groupingBy+downstream, primitive streams, parallel caution).
-- **Next up:** Module 18 — Optional (right usage, avoiding null, common mistakes)
-- **Sessions done:** 17
+- **Just finished:** Module 18 — Optional (return-type-only design intent, of/ofNullable/empty, orElse-vs-orElseGet eagerness gotcha, common misuses, chaining refactor).
+- **Next up:** Module 19 — Date/Time API (java.time) — LocalDate/Time, Duration/Period, formatting
+- **Sessions done:** 18
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -156,3 +156,7 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - reduce's 3-arg overload (identity, accumulator, combiner) exists for parallel streams
 - groupingBy + downstream collector (counting/mapping/nested groupingBy) reshapes each bucket — the practical power move
 - Parallel streams aren't automatically faster; shared mutable state in the lambda is a race condition waiting to happen
+- Optional is a RETURN-TYPE signal for possible absence, not a general null replacement — never use as a field or parameter
+- orElse(x) evaluates x eagerly always; orElseGet(supplier) only invokes on empty — measured: orElse ran an "expensive" call even when present, orElseGet did not
+- isPresent()+get() is a null-check with extra steps — use map/filter/orElse/orElseThrow/ifPresentOrElse instead
+- Never wrap a collection in Optional (Optional<List<T>>) — return an empty collection instead
