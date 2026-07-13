@@ -2,7 +2,7 @@
 
 **Goal:** Job-ready for Java backend roles (India), interview-optimized.
 **Scope:** Java Core only — Spring Boot is a separate project.
-**How to use:** Start each session in a new chat inside the project → paste this file → learn one module → apply the update lines the mentor gives you at the end.
+**How to use:** This is the live tracker. To resume, start a session and say "let's continue" — the `java-core-mentor` skill reads this file and picks up from "Next up". (See `README.md` for the repo map, `SKILL.md` for the teaching method.)
 
 **Marking:** check done with `[x]`; add 🔄 next to the one in progress. Priority: **[H]**igh / **[M]**edium / **[L]**ow.
 
@@ -21,38 +21,38 @@
 - [x] 6. Interfaces vs abstract classes — default/static methods, "multiple inheritance of type" · **[H]** · favorite design Q
 - [x] 7. equals() & hashCode() contract + Object methods (toString, getClass) · **[H]** · extremely frequent
 - [x] 8. Building immutable classes — defensive copying, why it matters · **[M]** · common design task
-- [ ] 9. Enums (real Java enums, not PHP-style) + EnumMap/EnumSet · **[M]**
-- [ ] 10. Nested & anonymous classes · **[M]** · needed to read real code + understand pre-lambda style
+- [x] 9. Enums (real Java enums, not PHP-style) + EnumMap/EnumSet · **[M]**
+- [x] 10. Nested & anonymous classes · **[M]** · needed to read real code + understand pre-lambda style
 
 ### Phase 2 — Generics & Collections (interview core) · ~5 sessions
-- [ ] 11. Generics — bounded types, wildcards (`? extends`/`? super`), PECS, type erasure · **[H]**
-- [ ] 12. Collections overview — List/Set/Queue/Map hierarchy; ArrayList vs LinkedList · **[H]**
-- [ ] 13. HashMap internals — buckets, hashing, treeify (Java 8), resize, load factor · **[H]** · the #1 internals Q
-- [ ] 14. Set/Map variants — HashSet, LinkedHashMap, TreeMap; when to use which · **[H]**
-- [ ] 15. Comparable vs Comparator, sorting; iterators, fail-fast vs fail-safe · **[H]**
+- [x] 11. Generics — bounded types, wildcards (`? extends`/`? super`), PECS, type erasure · **[H]**
+- [x] 12. Collections overview — List/Set/Queue/Map hierarchy; ArrayList vs LinkedList · **[H]**
+- [x] 13. HashMap internals — buckets, hashing, treeify (Java 8), resize, load factor · **[H]** · the #1 internals Q
+- [x] 14. Set/Map variants — HashSet, LinkedHashMap, TreeMap; when to use which · **[H]**
+- [x] 15. Comparable vs Comparator, sorting; iterators, fail-fast vs fail-safe · **[H]**
 
 ### Phase 3 — Modern functional Java · ~4 sessions
-- [ ] 16. Lambdas & functional interfaces (Function/Predicate/Consumer/Supplier) + method references · **[H]**
-- [ ] 17. Streams API — map/filter/reduce, Collectors (groupingBy/joining/toMap), flatMap, parallel · **[H]**
-- [ ] 18. Optional — right usage, avoiding null, common mistakes · **[M]**
-- [ ] 19. Date/Time API (java.time) — LocalDate/Time, Duration/Period, formatting · **[M]**
+- [x] 16. Lambdas & functional interfaces (Function/Predicate/Consumer/Supplier) + method references · **[H]**
+- [x] 17. Streams API — map/filter/reduce, Collectors (groupingBy/joining/toMap), flatMap, parallel · **[H]**
+- [x] 18. Optional — right usage, avoiding null, common mistakes · **[M]**
+- [x] 19. Date/Time API (java.time) — LocalDate/Time, Duration/Period, formatting · **[M]**
 
 ### Phase 4 — Exceptions · ~2 sessions
-- [ ] 20. Exception handling — checked vs unchecked, try-with-resources, custom exceptions, finally semantics, best practices · **[H]**
+- [x] 20. Exception handling — checked vs unchecked, try-with-resources, custom exceptions, finally semantics, best practices · **[H]**
 
 ### Phase 5 — Concurrency (senior differentiator) · ~6 sessions
-- [ ] 21. Threads — lifecycle, Runnable vs Callable, core methods · **[H]**
-- [ ] 22. Synchronization & memory model — synchronized, volatile, race conditions, deadlock, wait/notify · **[H]** · big separator
-- [ ] 23. Executors & thread pools — ExecutorService, Future, CompletableFuture, pool types · **[H]**
-- [ ] 24. Concurrent collections, atomics & locks — ConcurrentHashMap, BlockingQueue, ReentrantLock, atomics · **[H]**
+- [x] 21. Threads — lifecycle, Runnable vs Callable, core methods · **[H]**
+- [x] 22. Synchronization & memory model — synchronized, volatile, race conditions, deadlock, wait/notify · **[H]** · big separator
+- [x] 23. Executors & thread pools — ExecutorService, Future, CompletableFuture, pool types · **[H]**
+- [x] 24. Concurrent collections, atomics & locks — ConcurrentHashMap, BlockingQueue, ReentrantLock, atomics · **[H]**
 
 ### Phase 6 — JVM under the hood · ~3 sessions
-- [ ] 25. Memory model & GC — heap/stack, generations, GC algorithms, memory leaks, OOM, basic tuning · **[H]** · expected for experienced roles
-- [ ] 26. Class loading, reflection & annotations (create + process) · **[M]** · annotations bridge to Spring
+- [x] 25. Memory model & GC — heap/stack, generations, GC algorithms, memory leaks, OOM, basic tuning · **[H]** · expected for experienced roles
+- [x] 26. Class loading, reflection & annotations (create + process) · **[M]** · annotations bridge to Spring
 
 ### Phase 7 — Rounding out · ~3 sessions
-- [ ] 27. I/O & serialization — File/stream I/O, NIO basics, Serializable/transient pitfalls · **[M]**
-- [ ] 28. Modern Java 11–21 — var, records, sealed classes, pattern matching, switch expressions, text blocks, virtual threads (overview) · **[M]** · increasingly asked
+- [x] 27. I/O & serialization — File/stream I/O, NIO basics, Serializable/transient pitfalls · **[M]**
+- [x] 28. Modern Java 11–21 — var, records, sealed classes, pattern matching, switch expressions, text blocks, virtual threads (overview) · **[M]** · increasingly asked
 
 ### Phase 8 — Interview consolidation · ~2 sessions
 - [ ] 29. Rapid-fire "X vs Y" + coding drills + Java-8-vs-modern talking points + prep to start the Spring Boot project · **[H]**
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 8 — Building immutable classes (5-rule recipe, defensive copying in/out, List.copyOf vs unmodifiableList, records nuance)
-- **Next up:** Module 9 — Enums (real Java enums, not PHP-style) + EnumMap/EnumSet
-- **Sessions done:** 8
+- **Just finished:** Module 28 — Modern Java 11-21 (var static typing verified, record compact-constructor validation verified, sealed+exhaustive-switch+record-deconstruction verified, text blocks verified, virtual threads verified at 10,000 concurrent tasks). **PHASE 7 COMPLETE.**
+- **Next up:** Module 29 — Rapid-fire "X vs Y" + coding drills + Java-8-vs-modern talking points + prep to start the Spring Boot project — FINAL module of the course
+- **Sessions done:** 28
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -105,3 +105,107 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - Immutable class: `final` freezes the reference, not the object → defensive-copy mutable fields in AND out
 - `List.copyOf` = true copy; `Collections.unmodifiableList` = view (original can still mutate)
 - Records don't auto-copy mutable components → add a compact constructor
+- Enums: `==` is preferred (singleton, null-safe, compile-checked)
+- Per-constant abstract method bodies beat switch (compiler-enforced completeness)
+- EnumMap (ordinal array, declaration order) / EnumSet (bitvector) > HashMap/HashSet for enum keys
+- Never persist ordinal() (use name()/code); single-element enum = best Singleton
+- Static nested (no outer ref) vs inner (hidden outer ref, needs `outer.new Inner()`)
+- Inner class memory leak: pins outer alive → make it `static` if outer not needed
+- Effectively final capture: local = frozen copy; outer field = live read
+- Bounded type param = permission slip (enables method calls), not just a filter; unbounded `<T>` defaults to `<T extends Object>` — that's the bound, not "inference"
+- Invariance: `List<Integer>` is not a `List<Number>` — prevents smuggling a wrong type in via a supertype reference
+- PECS: Producer `extends` (read from it), Consumer `super` (write to it) — `Collections.copy(dest super, src extends)`
+- Type erasure: generics erased at compile time for backward compat; `Box<String>`/`Box<Integer>` share one runtime class
+- Erasure consequences: no `new T()`, no `instanceof List<String>`, no generic arrays, no overload-by-type-param-only, no `T` in `static` context
+- Bridge methods: compiler-generated erased-signature overload preserving polymorphism after overriding a generic method
+- Raw types bypass all checks; the `ClassCastException` fires at the read site (compiler-inserted cast), not where the bad value was stored
+- Map does NOT extend Collection (pairs vs. single elements); reachable via keySet()/values()/entrySet()
+- Set uniqueness = equals()/hashCode() contract, not interface magic
+- LinkedList implements both List AND Deque at once — genuinely dual-purpose
+- ArrayList: O(1) get, amortized O(1) append (1.5x resize); LinkedList: O(1) at ends, O(n) get, true O(1) insert ONLY via a positioned iterator
+- RandomAccess marker interface: ArrayList has it, LinkedList doesn't; JDK algorithms branch on it
+- `get(i)` loop over LinkedList = O(n²) anti-pattern (measured ~318x slower than iterator) — always for-each/iterator unless RandomAccess is guaranteed
+- Modern default: prefer ArrayList almost always; prefer ArrayDeque over LinkedList for real queue/stack/deque use
+- Casting a Queue reference to List for index access is a smell — only works if the concrete class implements both; breaks on ArrayDeque
+- HashMap bucket index = (capacity-1) & hash (bitmask, not modulo) — requires power-of-two capacity
+- hash() spreading (h ^ h>>>16) folds high bits down since bucket indexing only reads low bits
+- Treeify at 8 entries + capacity>=64 — defense against bad/malicious hashCode, not normal-case behavior
+- Treeification needs a real ordering signal (differing hashes or Comparable) — constant hashCode for every key still degrades far past O(log n)
+- Constant-but-consistent bad hashCode = performance bug; inconsistent hashCode = correctness bug (silently unreachable entries)
+- Load factor 0.75 = space/time tradeoff; resize doubles capacity, splits buckets via one new bit (lo/hi), no full rehash
+- new HashMap<>(n) rounds UP to next power of two (tableSizeFor)
+- Pre-size HashMap when count is known to skip resize-copy cascade — benchmark via separate JVM processes, not in-process back-to-back (JIT/GC bleed gives unreliable results)
+- HashSet is a thin wrapper over HashMap<E,Object> (dummy PRESENT value) — same guarantees/gotchas as HashMap
+- LinkedHashMap threads a doubly-linked list through the same hash nodes; accessOrder=true + removeEldestEntry override = LRU cache
+- TreeSet/TreeMap are a real always-on red-black tree — genuinely guaranteed O(log n) since Comparable/Comparator is mandatory (unlike HashMap's best-effort treeify)
+- TreeMap/TreeSet reject null (NPE on compareTo); HashMap/HashSet allow one null key
+- Comparable (compareTo) = one natural order, in the class; Comparator (compare) = external, pluggable, any number per type
+- Comparator chaining idiom: comparing().thenComparing().reversed() — know this syntax cold
+- Sorted collections (TreeSet/TreeMap) use compareTo/compare EXCLUSIVELY for equality, not equals/hashCode — mismatched, entries silently collapse (measured: 2 different Persons, same age -> TreeSet size 1)
+- Object sort (TimSort) is stable; primitive Arrays.sort (dual-pivot quicksort) is not, but stability is moot for primitives
+- Iterator.remove() (or removeIf) is the only safe way to remove mid-iteration
+- Fail-fast (modCount + ConcurrentModificationException) = best-effort bug detection, NOT a correctness guarantee
+- Fail-safe (CopyOnWriteArrayList, ConcurrentHashMap) trades CME-freedom for possibly-stale iteration
+- Lambda 'this' = enclosing instance (lexical); anonymous class 'this' = its own instance (verified: getSimpleName() empty for anonymous, enclosing class name for lambda)
+- Lambdas compile via invokedynamic/LambdaMetafactory at runtime, not a .class file per lambda like anonymous classes
+- andThen = receiver runs first, then argument; compose = argument runs first, then receiver
+- Unbound-instance method reference (String::toUpperCase) — the lambda's parameter BECOMES the receiver, easy to confuse with a static reference
+- Stream = lazy pipeline, not a data structure; single-use (2nd terminal op throws IllegalStateException)
+- Processing is vertical (one element through ALL stages) and short-circuits on findFirst/anyMatch/limit — not stage-by-stage over the whole collection
+- map = 1-to-1; flatMap = 1-to-many + flattens
+- reduce's 3-arg overload (identity, accumulator, combiner) exists for parallel streams
+- groupingBy + downstream collector (counting/mapping/nested groupingBy) reshapes each bucket — the practical power move
+- Parallel streams aren't automatically faster; shared mutable state in the lambda is a race condition waiting to happen
+- Optional is a RETURN-TYPE signal for possible absence, not a general null replacement — never use as a field or parameter
+- orElse(x) evaluates x eagerly always; orElseGet(supplier) only invokes on empty — measured: orElse ran an "expensive" call even when present, orElseGet did not
+- isPresent()+get() is a null-check with extra steps — use map/filter/orElse/orElseThrow/ifPresentOrElse instead
+- Never wrap a collection in Optional (Optional<List<T>>) — return an empty collection instead
+- java.time replaced Date/Calendar for immutability, thread-safety, and fixing 0-indexed months
+- Duration (time-based, exact) vs Period (date-based, calendar-aware) — NOT interchangeable: measured Period.ofMonths(1) on Jan 31 clamps to Feb 28, Duration.ofDays(1) gives a fixed 24h (Feb 1)
+- java.time types are immutable, same reassignment discipline as String
+- DateTimeFormatter is thread-safe; old SimpleDateFormat is NOT (shared instance across threads silently corrupts results)
+- ChronoUnit.between = single-unit raw count; Period.between = full calendar breakdown (years+months+days)
+- PHP has no checked exceptions — Java's checked/unchecked split and compiler enforcement is PHP-dev-new territory
+- try-with-resources closes multiple resources in REVERSE declaration order
+- If try throws AND close() also throws, the ORIGINAL exception wins and propagates; close()'s exception is suppressed (addSuppressed/getSuppressed), not swapped in
+- Custom exceptions must chain the cause (super(message, cause)) — never swallow the original when wrapping
+- return/throw INSIDE finally silently swallows any in-flight exception with zero trace — verified, never do this
+- Checked exceptions are controversial — interact badly with lambdas/streams (can't throw checked from most functional interfaces without wrapping)
+- JVM threads share ONE heap (unlike PHP's shared-nothing per-request model) — root cause of every concurrency bug
+- .run() is a plain method call on the current thread (no new thread); only .start() spawns a real thread — verified via thread names
+- Callable<V> returns a value/can throw checked exceptions; Runnable can't. FutureTask bridges a Callable onto a Thread, .get() retrieves the result
+- Thread lifecycle: NEW -> RUNNABLE -> (BLOCKED/WAITING/TIMED_WAITING) -> TERMINATED; terminated threads can't restart (IllegalThreadStateException)
+- sleep() does NOT release held locks (contrast wait(), which does); interrupt() is cooperative only — no-op on a thread not blocked in an interruptible call unless it checks isInterrupted() itself
+- Race condition measured: 10 threads x 100k increments on a plain int, expected 1M, got ~553k (lost updates) — count++ is 3 non-atomic steps
+- synchronized fixes it exactly (measured 1,000,000/1,000,000); volatile does NOT (measured ~315k, still lost updates) — volatile is visibility only, not atomicity
+- Instance synchronized and static synchronized use DIFFERENT locks (this vs ClassName.class) — proven not to exclude each other
+- Reentrant locks: same thread can re-enter a synchronized block on the same lock without self-deadlocking (per-thread hold count)
+- Deadlock = circular wait; fix = consistent global lock-acquisition order; ThreadMXBean.findDeadlockedThreads() can detect one programmatically
+- wait() releases the monitor (unlike sleep()); ALWAYS guard wait() in a while loop not if — spurious wakeups are real and documented
+- execute() exceptions go to the uncaught-handler (easy to miss); submit() captures them silently into the Future, surfacing ONLY via .get() as ExecutionException — verified a failing task with no .get() call produces zero visible failure
+- Executors factories hide unbounded queue/thread growth (newFixedThreadPool = unbounded queue, newCachedThreadPool = unbounded threads) — prefer explicit ThreadPoolExecutor in production
+- Forgetting ExecutorService.shutdown() keeps the JVM alive forever (pool threads aren't daemons by default); post-shutdown submit() throws RejectedExecutionException
+- CompletableFuture: thenApply (transform) vs thenCompose (flatMap, for a step returning its own CompletableFuture) vs thenCombine (merge 2 independent futures); exceptionally recovers with a fallback value
+- ConcurrentHashMap: fine-grained locking (not one global lock); weakly consistent iterators (never CME); no null keys/values (removes get()==null ambiguity in concurrent code)
+- Thread-safe data structure != atomic compound operation — measured manual check-then-act on ConcurrentHashMap lost 75% of updates (24976/100000); map.merge() got exactly 100000
+- Atomics (AtomicInteger etc) use CAS (compare-and-swap, optimistic, lock-free retry) vs synchronized's pessimistic blocking — measured AtomicInteger got exactly 100000 on the same race
+- ReentrantLock adds tryLock/tryLock(timeout)/lockInterruptibly/fairness over synchronized, but requires manual unlock() in finally (synchronized releases automatically) — verified tryLock false while held, true after release
+- Stack (per-thread, LIFO, auto-reclaim, bounded) vs Heap (shared, GC-managed) vs Metaspace (off-heap class metadata, replaced PermGen) — verified StackOverflowError after 16,118 recursive frames
+- Generational hypothesis: young gen (Eden+Survivor) -> frequent cheap Minor GC; old gen (promoted via age counter) -> rare expensive Major/Full GC. G1 = default collector since Java 9
+- A GC only reclaims TRULY unreachable objects — a "memory leak" in Java is unintentional reachability (unbounded static caches, unremoved listeners, ThreadLocal on pooled threads), not a different mechanism than C-style leaks
+- Verified real heap OutOfMemoryError under -Xmx32m; discovered live that an OOM catch-block's own println can throw a SECOND OOM if it allocates before freeing held memory first
+- Classloader delegation is parent-first (bootstrap->platform->application); classes load lazily on first active use
+- ClassNotFoundException (file missing) vs NoClassDefFoundError (was available, failed to init) — verified 1st ref throws ExceptionInInitializerError, 2nd ref throws NoClassDefFoundError, JVM never retries a failed class
+- getFields()/getMethods() = public+inherited; getDeclaredFields()/getDeclaredMethods() = all declared here (private included), not inherited — verified fully disjoint on a Base/Derived pair
+- setAccessible(true) bypasses access checks — literally how Spring/Jackson/JUnit work (inject/deserialize/invoke private members); real perf cost, increasingly JPMS-restricted
+- @Retention(RUNTIME) required for reflective visibility (isAnnotationPresent/getAnnotation) — default CLASS retention is invisible to reflection — verified identical check returns true vs false based purely on retention policy
+- java.io is the Decorator pattern wall-to-wall (BufferedReader wrapping InputStreamReader wrapping FileInputStream); prefer NIO.2 Path/Files over java.io.File (throws real exceptions vs silent false/0)
+- Serializable is a marker interface; ALWAYS declare serialVersionUID explicitly or structural changes silently break old serialized data
+- transient fields get their DEFAULT value on deserialization, never the original — verified live
+- NotSerializableException for an unmarked non-Serializable field fires at RUNTIME not compile time — verified live (Thread field)
+- Deserialization bypasses constructors entirely — zero invariant/defensive-copy protection against a crafted byte stream; real reason modern code avoids Serializable for untrusted input
+- var is local-only and STILL statically typed (inferred concrete type, fixed forever) — not PHP-style dynamic typing
+- Record compact constructor validates without restating field assignments; records implicitly final + extend java.lang.Record but CAN implement interfaces
+- Sealed classes/interfaces fix the permitted-subtype set at compile time, enabling compiler-checked EXHAUSTIVE switch (no default needed) — generalizes Module 9's enum-completeness guarantee
+- Switch pattern matching (Java 21) destructures records directly in the case label; switch expressions (Java 14) use -> with no fall-through, yield for multi-statement arms
+- Virtual threads are JVM-managed, not 1:1 with OS threads — millions possible; solves I/O-bound thread-per-request scaling without reactive rewrites, does NOT help CPU-bound work

@@ -178,3 +178,303 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **Records nuance:** records give final fields but **don't auto-defensive-copy** mutable components → add a **compact constructor** to copy in.
 - **Why:** thread-safe for free, safe hash keys, no defensive checks, cacheable, secure.
 - **PHP:** 8.1 `readonly` ≈ final fields; no built-in defensive copy (clone manually).
+
+---
+
+## Module 9 — Enums
+
+- **Enum = full class; each constant = a singleton instance.** Can have fields, (private) constructor, methods.
+- **Built-ins:** `name()`, `ordinal()` (0-based), `values()` (array), `valueOf("X")` (throws `IllegalArgumentException` if unknown). `toString()` defaults to `name()`. Comparable + Serializable.
+- **`==` is PREFERRED for enums** (opposite of normal objects!): singleton → identity=value, null-safe, compile-checked. `.equals()` also works but `==` wins.
+- `switch` case labels are **unqualified** (`MONDAY`, not `Day.MONDAY`).
+- **Per-constant method bodies** via an abstract method → each constant implements it. Beats `switch`: adding a constant **won't compile** until you give it behavior (compiler-enforced completeness). Standard "avoid switch" answer.
+- **Enums can implement interfaces** (can't extend a class — already extends `java.lang.Enum`).
+- **EnumMap** = Map keyed by enum, backed by an **array indexed by ordinal()** (no hashing; iterates in **declaration order**, not insertion). **EnumSet** = **bitvector** (a `long` for ≤64). Both faster/compact than HashMap/HashSet for enum keys/elements.
+- **Under the hood:** compiler makes `final class extends Enum`; constants are `public static final`, built in a static initializer at class load. Singleton survives serialization + reflection → single-element enum = best **Singleton** (Effective Java).
+- **Gotchas:** never persist `ordinal()` (reordering corrupts data → use `name()`/explicit code); keep enum fields `final` (constants are shared singletons = global state).
+- **PHP:** 8.1+ has real enums (pure + backed `->value` ≈ Java enum w/ field); pre-8.1 = untyped class constants.
+
+---
+
+## Module 10 — Nested & Anonymous Classes
+
+- **4 kinds:** static nested, inner (non-static), local, anonymous.
+- **Static nested** = no link to outer instance; `new Outer.StaticNested()`. Like a namespaced top-level class (e.g. `Map.Entry`).
+- **Inner (non-static)** = **hidden reference to an outer instance**; accesses outer's instance fields; needs `outer.new Inner()` syntax.
+- **Anonymous class** = inline unnamed class+instance implementing an interface/abstract class (`new Runnable(){...}`). **Pre-lambda way to pass behavior**; lambda ≈ anonymous impl of a functional interface.
+- **Effectively final:** captured local vars must be assigned once (copied into synthetic fields). **Captured local = frozen copy; outer instance field = live read** through the outer reference.
+- **Under the hood:** compiler emits `Outer$Inner.class`, `Outer$1.class` (anonymous). Inner class has a synthetic outer-reference field; static nested does not.
+- **⚠️ Memory-leak gotcha:** inner instance pins its outer alive (can't GC) if it outlives it (long-lived listener/callback/returned Iterator). **Fix: make it `static` if outer isn't needed** (Effective Java: prefer static nested).
+- **PHP:** anonymous classes since PHP 7; closures `function() use($x){}` ≈ capture. No class-in-class/outer binding.
+
+---
+
+## Module 11 — Generics ⭐ high-frequency (Phase 2 opener)
+
+- **No PHP equivalent** — PHPStan/Psalm `@template` is advisory-only, erased at runtime. Genuinely new mechanics.
+- **Why generics:** pre-Java-5 collections stored raw `Object` → manual casts, `ClassCastException` far from the real bug. Generics move the error to **compile time**, at the bad call.
+- **Generic class:** `class Box<T> { T value; ... }`, instantiated as `Box<String>`. **Generic method:** own `<T>` before return type, independent of the class — `T` is **inferred** from the call arg.
+- **Naming convention:** `T` Type, `E` Element, `K`/`V` Key/Value, `N` Number, `R` Return.
+- **Bounded type parameter** (`<T extends Comparable<T>>`): the bound is a **permission slip, not just a filter** — it's what lets the method body call `.compareTo()`. Unbounded `<T>` defaults to `<T extends Object>` (NOT "inferred as Object" — that's a different mechanism/call-site concern; the bound is what's visible in the method body regardless of any call site).
+  - `extends` used for both classes AND interfaces in a bound (no `implements` in generics).
+  - Multiple bounds: `<T extends Comparable<T> & Serializable>` (class first, then interfaces, `&`-joined).
+  - Self-referential bound `<T extends Comparable<T>>` is real JDK pattern — `Enum<E extends Enum<E>>`.
+- **Invariance:** `List<Integer>` is **NOT** a `List<Number>` even though `Integer IS-A Number`. If it were allowed, `List<Number> nums = ints; nums.add(3.14);` would smuggle a `Double` into a real `List<Integer>` — compile-time safety hole. Java just refuses the assignment.
+- **Wildcards:**
+  - `List<? extends Number>` — unknown subtype; read as `Number` ✅, write ❌ (might secretly be `List<Integer>`).
+  - `List<? super Integer>` — unknown supertype; write `Integer` ✅, read only as `Object` ⚠️.
+  - `List<?>` — unknown type; read as `Object` only, write ❌ (except `null`).
+  - `extends` = safe reads/blocked writes; `super` = safe writes/crippled reads. Never both open on one wildcard — by design.
+- **PECS (Producer Extends, Consumer Super):** producer (you read from it) → `extends`; consumer (you write to it) → `super`. Canonical: `Collections.copy(List<? super T> dest, List<? extends T> src)`.
+- **Type erasure:** generics are **compile-time only** — erased from bytecode for **backward compatibility** with pre-Java-5 `.class` files/JVM. Unbounded `T` → `Object`; bounded `<T extends Foo>` → `Foo`. `Box<String>` and `Box<Integer>` are the **same runtime class** (`getClass() ==` → `true`).
+- **Consequences of erasure (frequent gotcha list):**
+  - No `new T()` (no runtime type info).
+  - No `instanceof List<String>` (only `List<?>` / raw `List`).
+  - No `new T[10]` / `new List<String>[10]` (arrays check element type on every store at runtime; generics don't → heap pollution risk).
+  - No overloading `f(List<String>)` vs `f(List<Integer>)` (same erasure = duplicate method, compile error).
+  - No class `T` inside `static` members (static belongs to the class, not a parameterized instance).
+  - **Bridge methods:** compiler auto-generates a synthetic erased-signature overload (e.g. `compareTo(Object)`) so polymorphism survives erasure when you override with a narrower type (`compareTo(MyType)`). Visible via `javap -p`.
+- **Raw types (no `<>`):** opt completely out of generics checking — legal only for backward compat, **never use in new code**. `Box raw = new Box("x"); raw.set(42);` compiles (erasure = `Object` param). Assigning raw → parameterized ref = unchecked warning but compiles. The `ClassCastException` fires **at the read site** (compiler-inserted cast based on the *reference's* declared type), NOT where the bad value was stored — same "failure far from cause" problem generics exist to prevent, snuck back in.
+
+---
+
+## Module 12 — Collections Overview ⭐ high-frequency
+
+- **Hierarchy:** `Iterable` → `Collection` → `List` / `Set` / `Queue` (→ `Deque`). **`Map` is separate — does NOT extend `Collection`** (pairs vs. single elements, different shape, not a missing feature). Map exposes `keySet()`→`Set<K>`, `values()`→`Collection<V>`, `entrySet()`→`Set<Map.Entry<K,V>>` to plug back into the Collection world.
+- **`Set`'s uniqueness = `equals()`/`hashCode()` contract (Module 7), not interface magic.** Broken contract on your class → `HashSet` silently keeps "duplicates."
+- **Implementations map:** List→ArrayList/LinkedList/Vector; Set→HashSet/LinkedHashSet/TreeSet; Queue/Deque→ArrayDeque/LinkedList/PriorityQueue; Map→HashMap/LinkedHashMap/TreeMap.
+- **`LinkedList` implements BOTH `List` and `Deque`** simultaneously — genuinely dual-purpose, not just a list.
+- **ArrayList:** resizable `Object[]`. `get(index)`=O(1). `add` at end=amortized O(1) (resize at **1.5×** cap, `Arrays.copyOf`, default cap 10). Middle insert/remove=O(n) (`arraycopy` shift). Cache-friendly (contiguous memory).
+- **LinkedList:** doubly-linked `Node{prev,item,next}`. Ends (`addFirst/Last`, `removeFirst/Last`)=O(1). `get(index)`=O(n) (walks from nearer end, avg n/4). Index-based middle insert=**still O(n) overall** — traversal to reach the spot dominates. **True O(1) insert ONLY via an already-positioned `ListIterator`** — not "inserting at index N is fast." Heavier memory/element (node+2 refs+header). Poor cache locality (scattered nodes, pointer chasing).
+- **`RandomAccess` marker:** `ArrayList` implements it, `LinkedList` doesn't. JDK algorithms (`Collections.binarySearch`) check `instanceof RandomAccess` to pick index-loop vs iterator strategy.
+- **`get(i)`-loop anti-pattern:** looping `for(i=0;i<list.size();i++) list.get(i)` over a `LinkedList` = **O(n²)** (each call re-walks up to n/4 nodes, n times). Swap to for-each/iterator = O(n). **Measured: ~318× slower** on identical 40k-element data — same list, only the access pattern changed.
+- **Modern default: prefer ArrayList almost always** (cache locality wins in practice, even for insert-heavy workloads). For real queue/stack/deque needs, **prefer `ArrayDeque` over `LinkedList`** (circular array, no node overhead) — LinkedList rarely the right default anymore.
+- **Gotcha:** casting a `Queue` reference to `List` to get index access (`((List<Job>) jobs).get(i)`) only works because `LinkedList` happens to implement both. Swap to `ArrayDeque` (the modern recommendation) → `ClassCastException` at runtime. The cast itself is the smell — use `Queue`'s own methods (`poll()`/`peek()`) or a plain iterator instead.
+- **PHP:** one array type blurs list/set/map/queue into one hybrid structure; Java's split means the declared interface is a real contract (a `List` promises meaningful indexing, a `Queue` doesn't). No PHP equivalent of `RandomAccess`.
+
+---
+
+## Module 13 — HashMap Internals ⭐ THE #1 internals question
+
+- **Structure:** array of buckets (`Node<K,V>[] table`). `put`/`get` = compute bucket from hash, then `equals()`-scan within that bucket.
+- **Bucket index = bitmask, not modulo:** `(capacity-1) & hash`. Only works because capacity is **always a power of two** — a mask is only equivalent to modulo when it's a contiguous run of 1-bits. Non-power-of-two capacity → some indices become mathematically unreachable.
+- **`hash()` spreading:** `h ^ (h >>> 16)` — folds high bits down since bucket indexing only reads low bits; defends against hashCodes that differ mainly in high bits. Can't fix hashes already close in the low bits (e.g. 1 vs 17 still collide at capacity 16).
+- **Collision handling:** pre-Java-8 = linked list per bucket (O(n) worst case). Java 8+ **treeifies** a bucket into a red-black tree at **8 entries** (`TREEIFY_THRESHOLD`), but only if capacity ≥ **64** (`MIN_TREEIFY_CAPACITY`) — else resizes instead. Un-treeifies at ≤6 during a resize.
+- **Why 8:** Poisson-distribution argument in the JDK source — a healthy hash function almost never produces a bucket that large. Treeification = defense against a bad/malicious hashCode (hash-flooding), not normal-case behavior.
+- **Tree ordering:** compares `hash` first (real signal) → `Comparable` if available → else a class-name/identity-hash tiebreak (keeps the tree valid, but has NO relation to the keys, so can't prune a search).
+- **Key nuance:** a hashCode that's **constant** for every key still gets treeified, but degrades **far past O(log n)** (measured: per-lookup cost roughly doubles-to-sextuples every time n doubles) — because there's no real ordering signal, only the meaningless tiebreak. Treeification defends ordinary bucket collisions (different hashes, same bucket via mask truncation), NOT a hashCode that's constant for every input.
+- **Contract distinction:** constant-but-consistent bad hashCode = **performance** bug only (contract intact — consistent, equal keys share a hash). **Inconsistent** hashCode (varies per call for the same key) = **correctness** bug — put/get compute different buckets, entry becomes silently unreachable. Don't conflate the two.
+- **Real defense against pathological hashing:** write an actual hashCode() (combine fields with a multiplier, or `Objects.hash(...)`) so colliding buckets still have differing hash *values* for the tree to sort by.
+- **Resizing:** default capacity 16, default load factor **0.75**, threshold = capacity×loadFactor. Load factor 0.75 = space/time tradeoff (too high → deep buckets before resize; too low → wasteful, too-eager resizing).
+- **Java 8 resize optimization:** new capacity is always exactly 2× old, so the mask gains exactly one new bit. Each entry's new bucket is either its old index or `oldIndex+oldCapacity`, decided by that one new bit — resize splits each bucket into lo/hi lists and relinks, no full rehash needed.
+- **`tableSizeFor`:** initial-capacity constructor arg always rounds **up** to the next power of two (`new HashMap<>(50)` → capacity 64).
+- **Practical tip:** pre-size (`new HashMap<>((int)(n/0.75f)+1)`) when the count is known upfront — skips the resize-copy cascade. (Measure this via **separate JVM processes**, not back-to-back in one process — in-process timing let JIT/GC state bleed between configs and gave backwards results.)
+- **PHP:** array/hashtable hybrid exposes none of this — no capacity, no load factor, no visible resize policy. Java makes every tradeoff explicit and tunable.
+
+---
+
+## Module 14 — Set/Map Variants
+
+- **HashSet = thin wrapper over `HashMap<E,Object>`** (`add(e)` → `map.put(e, PRESENT)`). Same internals/guarantees as Module 13: O(1) average, no ordering.
+- **LinkedHashMap/LinkedHashSet:** same hash nodes as HashMap, PLUS a doubly-linked list threaded through them for predictable iteration. Default = **insertion order**. `accessOrder=true` constructor flag = re-orders on every get/put to **access order** (most-recently-used moves to the end).
+- **LRU cache in ~5 lines:** `new LinkedHashMap<>(cap, 0.75f, true) { removeEldestEntry() { return size() > N; } }` — accessOrder=true + override removeEldestEntry.
+- **TreeSet/TreeMap = a REAL, always-on red-black tree** (not conditional like HashMap's treeify). Requires `Comparable` or a supplied `Comparator` up front — no ordering signal → `ClassCastException` at insertion, not silent degradation. Genuinely guaranteed O(log n) (unlike HashMap's best-effort treeification from Module 13).
+- **Navigation methods** (TreeMap/TreeSet only): `firstKey/lastKey`, `higherKey/lowerKey`, `ceilingKey/floorKey`, `headMap/tailMap/subMap` (range views).
+- **Null handling:** HashSet/HashMap/LinkedHash* allow one null (key). **TreeSet/TreeMap reject null** — NPE on `compareTo`.
+- **Demo confirms:** HashSet order is neither insertion nor sorted (pure hash/bucket layout) — proof there's truly no ordering guarantee.
+- **When to use which:** don't care about order → Hash*; need insertion order → LinkedHash*; need sorted/range queries → Tree*; need LRU → LinkedHashMap(accessOrder=true).
+- **PHP:** arrays are always insertion-ordered by default — no PHP equivalent of choosing between unordered/insertion-ordered/sorted as distinct types with different cost tradeoffs.
+
+---
+
+## Module 15 — Comparable vs Comparator; Iterators, Fail-Fast vs Fail-Safe
+
+- **Comparable** (`compareTo`) = one natural order, defined INSIDE the class. **Comparator** (`compare`) = external, pluggable order(s), defined OUTSIDE — any number per type, functional interface.
+- **Modern chaining idiom:** `Comparator.comparing(Person::lastName).thenComparing(Person::firstName)`; also `.reversed()`, `naturalOrder()`/`reverseOrder()`, `nullsFirst`/`nullsLast`.
+- **⚠️ Sharpest gotcha:** sorted collections (`TreeSet`/`TreeMap`) decide "duplicate" via **`compareTo`/`compare` == 0 EXCLUSIVELY** — `equals()`/`hashCode()` are never consulted. Two clearly-different (`!equals`) objects that tie under the comparator **silently collapse into one entry**. Measured: two different `Person`s with the same age, in a `TreeSet<Person>` ordered by age → size 1, not 2.
+- **Sort stability:** object sort (`Collections.sort`/`List.sort`) = modified **TimSort**, O(n log n), **stable**. Primitive `Arrays.sort` = dual-pivot quicksort, **not stable** (moot — primitives have no identity beyond value).
+- **`Iterator.remove()`** = the only safe way to remove mid-iteration (updates iterator's own bookkeeping). Modern equivalent: `list.removeIf(condition)`.
+- **Fail-fast:** `modCount` incremented on every structural change; iterator checks `expectedModCount` on each `next()`, throws `ConcurrentModificationException` on mismatch — **best-effort bug detection, NOT a correctness guarantee**. Classic bug: `for(x : list) list.remove(x)` → CME. Fix: `Iterator.remove()` or `removeIf`.
+- **Fail-safe:** `CopyOnWriteArrayList`, `ConcurrentHashMap` iterators — snapshot/weakly-consistent traversal, never throws CME, but may not reflect the very latest concurrent changes. (Full depth in Phase 5.)
+- **PHP:** `usort`/`uasort` callback ≈ Comparator, but no Comparable-style natural-order convention, and no fail-fast iteration concept at all.
+
+**PHASE 2 COMPLETE** (Modules 11-15: Generics, Collections overview, HashMap internals, Set/Map variants, Comparable/Comparator + iterators).
+
+---
+
+## Module 16 — Lambdas & Functional Interfaces
+
+- **Functional interface** = exactly one abstract method (SAM); `@FunctionalInterface` enforces it at compile time (optional, not required for lambdas to work).
+- **Lambda vs anonymous class — 2 real differences (not just syntax):**
+  - Compilation: anonymous class → own `.class` file at compile time (`Outer$1.class`); lambda → `invokedynamic` + `LambdaMetafactory`, generated at runtime, no per-lambda `.class` file.
+  - **`this` binding:** lambda's `this` = the ENCLOSING instance (lexical, no new scope); anonymous class gets its OWN `this`. Verified: `this.getClass().getSimpleName()` inside a lambda printed the enclosing class name; inside an anonymous class it printed **empty** (anonymous classes have no simple name at all, even reflectively).
+  - Captured-variable rule is identical to Module 10 (effectively final locals = frozen copy; outer fields = live read).
+- **4 core interfaces:** `Function<T,R>.apply`, `Predicate<T>.test`, `Consumer<T>.accept`, `Supplier<T>.get`.
+- **Chaining:** `andThen` = receiver runs FIRST, then argument. `compose` = argument runs FIRST, then receiver. `Predicate.and/or/negate`.
+- **Primitive specializations** (`IntPredicate`, `ToIntFunction`, etc.) avoid autoboxing — same cost Module 3 warned about, now showing up in `java.util.function`.
+- **4 method-reference kinds:** static (`Integer::parseInt`), bound-instance (`System.out::println` — receiver fixed, param = argument), **unbound-instance** (`String::toUpperCase` — param BECOMES the receiver, easy to mix up with static), constructor (`ArrayList::new`).
+- **PHP:** closures capture via explicit `use($x)`; no equivalent of the lambda/anonymous-class `this`-binding split since PHP only has one way to define inline behavior.
+
+---
+
+## Module 17 — Streams API
+
+- **Stream = lazy pipeline, not a data structure.** Nothing runs until a terminal op fires. **Single-use** — a 2nd terminal op on the same stream throws `IllegalStateException`.
+- **Intermediate** (map/filter/flatMap/sorted/distinct/limit/skip/peek) = lazy, returns a new Stream. **Terminal** (collect/reduce/forEach/count/anyMatch/findFirst/toArray) = triggers execution, produces a real result.
+- **⭐ The model that matters:** processing is **vertical** (one element pulled through ALL stages before the next element starts), not horizontal/stage-by-stage. `findFirst`/`anyMatch`/`limit` **short-circuit** — stop the whole pipeline the instant satisfied. Verified: `peek` on an 8-element list saw only elements 1-2 before `findFirst` ended everything; 3-8 never touched by ANY stage.
+- **map vs flatMap:** map = 1-to-1. flatMap = 1-to-many + flattens (`Stream<List<T>>` → `Stream<T>` via `.flatMap(List::stream)`).
+- **reduce:** 3 overloads — `reduce(BinaryOperator)`→Optional; `reduce(identity,BinaryOperator)`→T; `reduce(identity,accumulator,combiner)` — 3-arg exists for PARALLEL streams (combiner merges per-thread partial results).
+- **Collectors:** `toList`/`joining(delim)`; `groupingBy(classifier)` → Map<K,List<T>>; `groupingBy(classifier, downstream)` — pair with `counting()`/`mapping()`/nested `groupingBy` to reshape each bucket; `partitioningBy(predicate)` → always exactly `Map<Boolean,List<T>>`.
+- **Primitive streams** (IntStream/LongStream/DoubleStream): avoid autoboxing per element — same Module 3 cost, `mapToInt`/`mapToObj`/`.boxed()` convert at the boundary.
+- **Parallel streams:** `ForkJoinPool.commonPool()`-backed; NOT automatically faster (coordination overhead can lose to sequential on small/cheap work); shared mutable state touched inside the lambda = race condition. Full depth in Phase 5.
+- **PHP:** `array_filter`/`array_map`/`array_reduce` run eagerly, full intermediate array at each step (horizontal) — no laziness, no short-circuiting, no single-use restriction.
+
+---
+
+## Module 18 — Optional
+
+- **Purpose:** a RETURN-TYPE signal that a result might be absent — makes it visible in the signature, unlike `null`. NOT a general null-replacement.
+- **Creation:** `Optional.of(v)` throws NPE immediately if v is null (fail-fast); `Optional.ofNullable(v)` → empty instead; `Optional.empty()`.
+- **Anti-pattern:** `if (opt.isPresent()) opt.get();` = null-check with extra steps, defeats the purpose. Use `map`/`filter`/`orElse`/`orElseThrow`/`ifPresent`/`ifPresentOrElse` instead.
+- **⚠️ orElse vs orElseGet:** `orElse(x)` evaluates `x` EAGERLY, always, even when present (Java evaluates args before the call). `orElseGet(supplier)` only invokes the supplier when actually empty. Measured: `.orElse(expensiveCall())` on a PRESENT optional still ran `expensiveCall()`; `.orElseGet(() -> expensiveCall())` did not. Real perf/correctness bug, not style.
+- **Common mistakes:** Optional as a field or method parameter (not Serializable, awkward for callers — return-type only); `.get()` without checking → `NoSuchElementException` (same crash pattern, new name); wrapping a collection in Optional (`Optional<List<T>>`) — just return an empty collection instead.
+- **Good use:** chained `map()` calls replace nested null-check pyramids, short-circuiting to `orElse(default)` cleanly.
+- **PHP:** nullsafe `?->` (PHP 8) covers chained access but is a language-level null-propagation operator, not a distinct type — doesn't force a signature to declare possible absence. No standard Optional/Option type in PHP.
+
+---
+
+## Module 19 — Date/Time API (java.time)
+
+- **Why it exists:** old `Date`/`Calendar` = mutable, not thread-safe, 0-indexed months (`Calendar.JANUARY==0`). Java 8's `java.time` (JSR-310) = immutable, thread-safe, unambiguous. **Months are 1-indexed** here.
+- **Core types, one concept each:** `LocalDate` (date only), `LocalTime` (time only), `LocalDateTime` (date+time, no zone), `ZonedDateTime` (date+time+zone), `Instant` (UTC-timeline point, machine timestamp).
+- **⭐ Duration (time-based, exact) vs Period (date-based, calendar-aware):** NOT interchangeable. Measured: `Period.ofMonths(1)` added to Jan 31 2026 → **Feb 28** (clamped to calendar). `Duration.ofDays(1)` (fixed 24h) added to Jan 31 09:00 → **Feb 1, 09:00**. Same "1 unit," genuinely different results.
+- **Immutability = same rule as String (Module 4):** `plusDays`/`withYear`/etc. return a NEW instance; forgetting to reassign is a silent no-op.
+- **`DateTimeFormatter`** is immutable/thread-safe (safe as shared `static final`) — fixes a REAL bug in old `SimpleDateFormat`, which is mutable and NOT thread-safe (shared instance across threads → silently corrupted parse/format results, not a crash).
+- **`ChronoUnit.DAYS.between(a,b)`** = single-unit raw count. **`Period.between(a,b)`** = full calendar breakdown (years+months+days).
+- **PHP:** `DateTime` (mutable mistake) vs `DateTimeImmutable` (the fix) mirrors this exactly; `DateInterval` ≈ Duration+Period combined.
+
+**PHASE 3 COMPLETE** (Modules 16-19: Lambdas & functional interfaces, Streams API, Optional, Date/Time API).
+
+---
+
+## Module 20 — Exception Handling
+
+- **Hierarchy:** `Throwable` → `Error` (JVM-level, don't catch) + `Exception` → `RuntimeException` (**unchecked**) / everything else (**checked**, compiler-enforced: catch or `throws`).
+- **PHP has NO checked exceptions** — every PHP exception is "unchecked" in Java's sense. This enforcement mechanism is Java-specific.
+- **Checked exceptions are controversial:** interact badly with lambdas/streams (can't throw checked from most functional interfaces without wrapping) — modern code often favors unchecked even for recoverable cases.
+- **try-with-resources:** any `AutoCloseable`; multiple resources close in **REVERSE** declaration order (verified: r2 before r1). If try throws AND close() also throws, the **original exception wins**, close()'s exception is attached as **suppressed** (`addSuppressed`/`getSuppressed`), NOT swapped in — fixes the old finally-masks-original-exception bug.
+- **Custom exceptions:** extend `Exception` (checked) or `RuntimeException` (unchecked); ALWAYS chain the cause (`super(message, cause)`) — never swallow the original when wrapping.
+- **⚠️ finally's worst gotcha:** `finally` always runs, but a `return`/`throw` INSIDE finally silently swallows any in-flight exception with zero trace. Verified: a method that throws in try but `return`s in finally returns normally — the exception vanishes completely. Never put `return` in `finally`.
+- **Best practices:** catch specific not broad; never swallow silently (empty catch); don't use exceptions for control flow; chain causes; prefer try-with-resources over manual finally-cleanup.
+
+**PHASE 4 COMPLETE** (Module 20: Exception handling).
+
+---
+
+## Module 21 — Threads
+
+- **⭐ Mental shift:** PHP = shared-nothing (fresh memory per request). JVM threads SHARE one heap — genuinely simultaneous access to the same objects/static fields. No PHP analogy. Root cause of every concurrency bug in this phase.
+- **Prefer `Runnable` + `Thread` over extending `Thread`** — separates task from executor, doesn't burn the one superclass slot.
+- **`start()` vs `run()`:** `.run()` = plain method call on the CURRENT thread, no new thread at all (verified: printed "main"). Only `.start()` spawns a real thread (verified: printed "Thread-1"). Compiles and runs fine either way — that's the trap.
+- **`Runnable` (no return, no checked throws) vs `Callable<V>` (returns V, can throw checked).** Bridge: `FutureTask<V>` implements both `Runnable` and `Future<V>` — wrap a Callable, run it via `new Thread(futureTask)`, retrieve with `.get()` (verified: returned 42). Predecessor to `ExecutorService.submit()` (Module 23).
+- **Lifecycle:** NEW → RUNNABLE → (BLOCKED/WAITING/TIMED_WAITING) → TERMINATED. Verified live: NEW before start() → TIMED_WAITING during `sleep(300)` → TERMINATED after join(). **Terminated threads can't restart** — 2nd `.start()` throws `IllegalThreadStateException` (verified).
+- **BLOCKED** = waiting on a `synchronized` lock. **WAITING** = indefinite (`wait()`/`join()` no timeout/`park()`). **TIMED_WAITING** = bounded (`sleep(ms)`/`wait(ms)`/`join(ms)`).
+- **`join()`** = caller blocks until target reaches TERMINATED. **`sleep(ms)`** pauses current thread, does **NOT** release held locks (contrast `wait()`, which does — Module 22). **`interrupt()`** = cooperative only — wakes a thread blocked in sleep/wait/join with `InterruptedException` (verified); does NOTHING to a thread running plain code unless it explicitly checks `isInterrupted()`. No forcible kill in Java (`Thread.stop()` deprecated — can corrupt shared state).
+- **Daemon threads** (`setDaemon(true)` before start) don't keep the JVM alive alone.
+- **PHP:** no close equivalent — PHP-FPM workers are separate processes, not shared-heap threads.
+
+---
+
+## Module 22 — Synchronization & Memory Model ⭐ THE big separator
+
+- **Race condition:** `count++` is 3 steps (read/add/write), not atomic. MEASURED: 10 threads × 100k increments, expected 1,000,000 → plain `int` got **553,637** (lost ~45%).
+- **`synchronized`:** locks an object's intrinsic monitor; released even on exception. MEASURED: same race, guarded by `synchronized`, landed at **exactly 1,000,000**.
+- **⚠️ Instance `synchronized` vs `static synchronized` use DIFFERENT locks** (`this` vs `ClassName.class`) — do NOT exclude each other. PROVEN: a thread holding an instance lock (confirmed via CountDownLatch) did not block a `static synchronized` method — it returned in 0ms.
+- **Reentrant:** a thread already holding a lock can re-enter another synchronized block on the SAME lock without self-deadlocking (per-thread hold count). Proven: outer() calling inner(), same object/thread, no issue.
+- **`volatile` = visibility only, NOT atomicity.** MEASURED: the identical race with a `volatile int` STILL lost updates (315,236 vs 1,000,000 expected) — visibility of each read/write doesn't stop interleaving across a compound read-modify-write. Use volatile only for simple independent flags; use synchronized/Atomic* (Module 24) for compound updates.
+- **Deadlock:** circular wait (A holds Lock1 waits Lock2; B holds Lock2 waits Lock1). Fix = consistent GLOBAL lock-acquisition order everywhere. Detected live via `ThreadMXBean.findDeadlockedThreads()` — showed the exact circular ownership (t1 blocked on t2's lock, t2 blocked on t1's lock).
+- **`wait()`/`notify()`/`notifyAll()`:** must be called inside `synchronized` on the SAME object (else `IllegalMonitorStateException`). `wait()` RELEASES the monitor (unlike `sleep()`, which holds all locks). `notify()` wakes one arbitrary thread; `notifyAll()` wakes all (safer default — `notify()` risks starving a legit waiter). **ALWAYS guard `wait()` in a `while` loop, never `if`** — spurious wakeups are real/documented, not hypothetical. Verified with a bounded (cap=3) producer-consumer queue.
+- **PHP:** no analogue at all — no shared mutable heap across simultaneous execution paths in ordinary PHP.
+
+---
+
+## Module 23 — Executors & Thread Pools
+
+- **Why:** raw `Thread`-per-task (Module 21) doesn't scale — OS thread creation overhead, no reuse, unbounded pile-up. `ExecutorService` = managed reusable pool + task queue.
+- **Factories:** `newFixedThreadPool(n)` (unbounded queue!), `newCachedThreadPool()` (unbounded threads!), `newSingleThreadExecutor()`, `newScheduledThreadPool(n)`. **Caution:** unbounded queue/thread growth is a real production risk — prefer explicit `ThreadPoolExecutor` with bounded queue + rejection policy in production.
+- **⚠️ `execute()` vs `submit()` exception gotcha:** `execute()` exceptions go to the uncaught-handler (easy to miss). `submit()` returns a `Future` and CAPTURES the exception silently — it only surfaces via `.get()` (wrapped in `ExecutionException`, real cause via `getCause()`). MEASURED: a failing task with `.get()` never called → **zero visible failure**; the identical failure WITH `.get()` called → `ExecutionException` surfaced correctly. Never skip `.get()` on a task that might fail.
+- **`Future`:** `.get()` blocks; `.get(timeout, unit)` bounded (→ `TimeoutException`); `.cancel(mayInterrupt)`; `.isDone()`/`.isCancelled()`.
+- **Shutdown lifecycle:** `shutdown()` (graceful, finish queued work) vs `shutdownNow()` (interrupt + return unstarted tasks). Verified: submitting after `shutdown()` → `RejectedExecutionException` immediately. Forgetting to shut down = pool threads (non-daemon by default) keep the JVM alive forever.
+- **`CompletableFuture`:** `supplyAsync`/`runAsync` start async work (default `ForkJoinPool.commonPool()`). `.thenApply` (transform, verified chained 10→15→30), `.thenAccept`/`.thenRun`, `.thenCompose` (flatMap-style, for a step returning its own CompletableFuture), `.thenCombine` (merge 2 independent futures, verified 3+4=7). `.exceptionally(fn)` recovers with a fallback (verified: a throwing stage recovered to -1); `.handle()` handles both outcomes; `.whenComplete()` = side-effect only. `*Async` twin methods run the continuation on the pool/a given executor instead of the completing thread.
+- **PHP:** no core-language equivalent — ReactPHP/Amp promises are third-party event-loop libraries, not a runtime feature.
+
+---
+
+## Module 24 — Concurrent Collections, Atomics & Locks
+
+- **ConcurrentHashMap:** fine-grained (bucket-level) locking + CAS, NOT one global lock (unlike legacy `Hashtable`/`Collections.synchronizedMap()`). Iterators are weakly consistent — NEVER throw CME (contrast Module 15's fail-fast HashMap). **No null keys/values** — deliberate, removes the get()==null ambiguity that would otherwise be a real race in concurrent code.
+- **⚠️ Thread-safe data structure ≠ atomic compound operation.** MEASURED: manual `get()`+`put()` check-then-act on a ConcurrentHashMap, 10 threads x 10k increments, expected 100,000 → got **24,976** (lost 75%!). `map.merge(key,1,Integer::sum)` on the same load → **exactly 100,000**. Use `putIfAbsent`/`computeIfAbsent`/`compute`/`merge` for atomic read-modify-write, never manual check-then-act even on a "thread-safe" map.
+- **BlockingQueue:** `put()`/`take()` block instead of throwing/returning sentinels — literally Module 22's hand-rolled wait/notify bounded producer-consumer, built in. `ArrayBlockingQueue` (fixed, array), `LinkedBlockingQueue` (optionally bounded, nodes), `PriorityBlockingQueue` (unbounded, ordered), `SynchronousQueue` (zero capacity, direct handoff — used inside `newCachedThreadPool`).
+- **Atomics (AtomicInteger/Long/Reference):** lock-free via **CAS** (compare-and-swap — one atomic hardware instruction, retry-loop on conflict). MEASURED: `AtomicInteger.incrementAndGet()` on the same 10x10k race → **exactly 100,000**, no lock. CAS = optimistic (never blocks); `synchronized` = pessimistic (parks/waits). `LongAdder` for EXTREME contention (splits count across cells).
+- **ReentrantLock vs synchronized:** adds `tryLock()`/`tryLock(timeout)` (non-blocking/bounded attempt — MEASURED: false while held by another thread via CountDownLatch-verified hold, true after release+join), `lockInterruptibly()` (waiting thread CAN be interrupted, unlike blocking on `synchronized`), fairness option. **Must manually `unlock()` in `finally`** — synchronized releases automatically on exception, ReentrantLock does NOT; a missed unlock = permanently leaked lock, deadlocks everyone waiting on it.
+- **ReentrantReadWriteLock:** shared read lock (concurrent readers) + exclusive write lock — avoids serializing reads for read-heavy/write-rare state.
+- **PHP:** no equivalent — no shared-heap concurrency model at all in ordinary PHP.
+
+**PHASE 5 COMPLETE** (Modules 21-24: Threads, Synchronization & memory model, Executors & thread pools, Concurrent collections/atomics/locks).
+
+---
+
+## Module 25 — Memory Model & GC
+
+- **Stack** (per-thread, LIFO, auto-reclaimed, holds primitives + object REFERENCES) vs **Heap** (shared, GC-managed, holds all objects) vs **Metaspace** (off-heap class metadata, replaced PermGen, grows until `-XX:MaxMetaspaceSize`).
+- **Verified `StackOverflowError`:** unbounded recursion threw it after **16,118** frames.
+- **Generational hypothesis:** most objects die young. Young gen (Eden+2 Survivor) → frequent, cheap **Minor GC**. Objects surviving enough cycles (age counter) get promoted → Old gen → rare, expensive **Major/Full GC**.
+- **GC algorithms:** Serial (single-thread STW) / Parallel (multi-thread STW, throughput) / **G1 (default since Java 9**, region-based, predictable pauses, mostly concurrent) / ZGC & Shenandoah (sub-millisecond pauses, latency-critical). **Stop-the-world** = app threads pause during some GC phases — even "concurrent" collectors still have (shorter) STW phases.
+- **⭐ A GC prevents nothing — it only reclaims TRULY unreachable objects.** A Java "memory leak" = unintentional reachability, not a different mechanism than C-style leaks in practical effect. Patterns: unbounded static caches (no eviction), unremoved listeners (Module 10 inner-class-leak callback), unclosed resources (Module 20 callback), `ThreadLocal` set-but-never-removed on a POOLED thread (thread outlives the logical request, leaks into the next one).
+- **OOM varieties:** `heap space` (heap exhausted — VERIFIED under `-Xmx32m`, threw after ~30MB), `Metaspace` (too many loaded classes / classloader leak), `GC overhead limit exceeded` (~98%+ time in GC, reclaiming nothing — JVM giving up rather than thrashing forever). `StackOverflowError` is a sibling `Error`, NOT an `OutOfMemoryError`.
+- **⚠️ Genuine accident, kept as a lesson:** an OOM-handling `catch` block that tries to `println` immediately can itself throw a SECOND `OutOfMemoryError` (the println needs to allocate a String, and there's no heap left) — verified this crashed the demo on the first attempt. Fix: release held memory (`holder.clear(); holder=null;`) BEFORE any further allocation in the handler.
+- **Tuning:** `-Xms`/`-Xmx` (heap size), `-XX:+UseG1GC` (collector choice), `-XX:MaxMetaspaceSize`, `-XX:+HeapDumpOnOutOfMemoryError` (auto heap dump on OOM — standard first debugging step).
+- **PHP:** per-request refcounting + cycle collector scopes memory to the request by default — most of these leak patterns (growing static cache, ThreadLocal-on-pooled-thread) have no direct PHP equivalent.
+
+---
+
+## Module 26 — Class Loading, Reflection & Annotations
+
+- **Classloader delegation:** Bootstrap → Platform → Application, PARENT-FIRST (why user code can't shadow `java.lang.String`). Classes load LAZILY on first active use. Phases: Loading → Linking (verify/prepare-defaults/resolve) → Initialization (static blocks run — Module 5 callback).
+- **`ClassNotFoundException`** (file genuinely missing) vs **`NoClassDefFoundError`** (class WAS available, failed to init). VERIFIED: a class with a static initializer that divides by zero threw `ExceptionInInitializerError` (wrapping the real `ArithmeticException`) on 1st reference, then `NoClassDefFoundError` on the 2nd — JVM marks the class erroneous permanently after first failure, never retries.
+- **`getFields()`/`getMethods()`** = public + INHERITED. **`getDeclaredFields()`/`getDeclaredMethods()`** = everything declared directly here (private included), NOT inherited. VERIFIED fully disjoint on a Base/Derived pair: getFields()→[basePublicField], getDeclaredFields()→[secret].
+- **`setAccessible(true)`** bypasses access checks — VERIFIED reading+overwriting a private field from outside the class. **This is literally how Spring/Jackson/JUnit work** (inject private fields, deserialize private fields, invoke @Test methods) — no extra magic beyond this + annotations. Real costs: slower than direct calls; increasingly JPMS-restricted against JDK internals.
+- **`@Retention`:** `SOURCE` (compiler-only) / `CLASS` (bytecode, NOT reflectively visible — the DEFAULT if omitted) / `RUNTIME` (reflectively visible — REQUIRED for any framework to detect it). VERIFIED: identical `isAnnotationPresent()` check returned `true` for a RUNTIME-retention annotation, `false` for a default-retention one on an otherwise-identical setup — retention policy is the only variable.
+- **`@Target`** restricts legal placement; **`@Inherited`** = class-level annotations only, inherited by subclasses; **`@Documented`** = shows in Javadoc.
+- **The scan→detect→invoke pattern** (`isAnnotationPresent`+`getAnnotation`+reflective invoke) IS mechanically how Spring finds `@Component`/`@Autowired`, JUnit finds `@Test`, JPA finds `@Entity` — direct bridge to the upcoming Spring project.
+- **PHP:** 8's attributes (`#[Attribute]`) are the direct structural equivalent, used by Symfony/Doctrine the same way.
+
+**PHASE 6 COMPLETE** (Modules 25-26: Memory model & GC, Class loading/reflection/annotations).
+
+---
+
+## Module 27 — I/O & Serialization
+
+- **Byte streams** (InputStream/OutputStream, raw bytes) vs **character streams** (Reader/Writer, needs a charset) — split exists because text without a defined encoding = mojibake. `InputStreamReader`/`OutputStreamWriter` bridge the two.
+- **`java.io` = the Decorator pattern**, wall-to-wall: `new BufferedReader(new InputStreamReader(new FileInputStream(...), charset))` — each layer adds ONE capability. Every stream is `AutoCloseable` (Module 20 try-with-resources callback).
+- **NIO.2 (`Path`/`Files`, Java 7+)** = modern default over legacy `java.io.File`. `Files.writeString`/`readString` (Java 11+) verified round-tripping the same file the decorator chain reads. Real reason to prefer it: `File` methods return `false`/`0` on failure (unhelpful); `Files` throws SPECIFIC exceptions (`NoSuchFileException`, etc.).
+- **`Serializable`** = marker interface (Module 9 callback). **Always declare `serialVersionUID` explicitly** — unspecified, JVM auto-computes it from class structure, and a trivial change can silently break old serialized data (`InvalidClassException`).
+- **`transient`** = skipped during serialization, gets DEFAULT value on deserialize (never the original). VERIFIED: transient `sessionToken` → `null` after deserialize; non-transient `username` → correctly restored.
+- **⚠️ `NotSerializableException` fires at RUNTIME, not compile time** — a non-Serializable field left unmarked (e.g. a `Thread`) compiles fine, throws only when you actually try to serialize. VERIFIED live.
+- **⚠️ Deserialization bypasses constructors entirely** — a class validating invariants only in its constructor gets ZERO protection against a crafted/corrupted byte stream. Real reason modern code avoids `Serializable` for untrusted input, preferring JSON/protobuf.
+- **PHP:** `serialize()`/`unserialize()` shares the identical pitfall list — `__wakeup()` ≈ `readObject()`, exists because of the same "object injection via untrusted unserialize()" concern.
+
+---
+
+## Module 28 — Modern Java 11–21
+
+- **`var` (Java 10):** local-only (never fields/params/returns), STILL statically typed — inferred concrete type fixed forever, NOT PHP-style dynamic typing. Verified: `var message="hello"` → runtime class `java.lang.String`.
+- **Records, deepened:** compact constructor (`Range { if(...) throw...; }`) validates WITHOUT restating field assignments (still happen implicitly after). Verified: valid Range ok, invalid Range threw `IllegalArgumentException`. Implicitly `final` + extend `java.lang.Record` (can't extend anything else) but CAN implement interfaces + have static members.
+- **Sealed classes/interfaces (Java 17):** `permits` fixes the COMPLETE implementer set at compile time; every permitted type must be `final`/`sealed`/`non-sealed`. Enables compiler-checked EXHAUSTIVE switch (no `default` needed) — generalizes Module 9's enum-completeness guarantee to whole class hierarchies. Verified: 3-way sealed Shape hierarchy, switch with zero default compiled and ran correctly.
+- **Pattern matching:** `instanceof` pattern (Java 16) removes the redundant cast after the check. Switch pattern matching (Java 21) matches type + destructures records directly in the case label (`case Circle(double r) ->`) + guarded `when` clauses. Verified record deconstruction working correctly for all 3 shapes.
+- **Switch expressions (Java 14):** `->` arms, NO fall-through (fixes forgotten-break bug), `yield` for multi-statement arms, exhaustiveness enforced over enums/sealed types.
+- **Text blocks (Java 15):** `"""..."""` multi-line strings, incidental whitespace auto-stripped. Verified clean JSON-shaped output.
+- **Virtual threads (Java 21), overview level:** JVM-managed, NOT 1:1 with OS threads — millions possible vs thousands for platform threads. `Executors.newVirtualThreadPerTaskExecutor()`. Verified: 10,000 concurrent tasks all completed; unstarted virtual thread toString = `VirtualThread[#10023]/new` (genuinely distinct thread type). Mechanism: blocking on I/O unmounts from carrier OS thread, mounts a different virtual thread — ordinary blocking code, JVM handles scaling. Solves Module 23's Executors thread-count caution for I/O-bound work specifically (not CPU-bound).
+- **PHP:** no analogue for sealed types/record deconstruction/exhaustive switch. PHP 8.1 readonly+promotion ≈ partial records; PHP 8's `match` ≈ switch expressions closely.
+
+**PHASE 7 COMPLETE** (Modules 27-28: I/O & serialization, Modern Java 11-21).
