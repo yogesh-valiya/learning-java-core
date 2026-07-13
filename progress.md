@@ -43,7 +43,7 @@
 ### Phase 5 — Concurrency (senior differentiator) · ~6 sessions
 - [x] 21. Threads — lifecycle, Runnable vs Callable, core methods · **[H]**
 - [x] 22. Synchronization & memory model — synchronized, volatile, race conditions, deadlock, wait/notify · **[H]** · big separator
-- [ ] 23. Executors & thread pools — ExecutorService, Future, CompletableFuture, pool types · **[H]**
+- [x] 23. Executors & thread pools — ExecutorService, Future, CompletableFuture, pool types · **[H]**
 - [ ] 24. Concurrent collections, atomics & locks — ConcurrentHashMap, BlockingQueue, ReentrantLock, atomics · **[H]**
 
 ### Phase 6 — JVM under the hood · ~3 sessions
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 22 — Synchronization & memory model (race conditions measured, synchronized fix measured, volatile-visibility-not-atomicity measured, static-vs-instance lock separation proven, deadlock triggered+detected via ThreadMXBean, wait/notify producer-consumer).
-- **Next up:** Module 23 — Executors & thread pools (ExecutorService, Future, CompletableFuture, pool types)
-- **Sessions done:** 22
+- **Just finished:** Module 23 — Executors & thread pools (ExecutorService vs raw Threads, execute-vs-submit exception gotcha measured both ways, shutdown lifecycle + RejectedExecutionException verified, CompletableFuture chaining/thenCombine/exceptionally verified).
+- **Next up:** Module 24 — Concurrent collections, atomics & locks (ConcurrentHashMap, BlockingQueue, ReentrantLock, atomics)
+- **Sessions done:** 23
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -182,3 +182,7 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - Reentrant locks: same thread can re-enter a synchronized block on the same lock without self-deadlocking (per-thread hold count)
 - Deadlock = circular wait; fix = consistent global lock-acquisition order; ThreadMXBean.findDeadlockedThreads() can detect one programmatically
 - wait() releases the monitor (unlike sleep()); ALWAYS guard wait() in a while loop not if — spurious wakeups are real and documented
+- execute() exceptions go to the uncaught-handler (easy to miss); submit() captures them silently into the Future, surfacing ONLY via .get() as ExecutionException — verified a failing task with no .get() call produces zero visible failure
+- Executors factories hide unbounded queue/thread growth (newFixedThreadPool = unbounded queue, newCachedThreadPool = unbounded threads) — prefer explicit ThreadPoolExecutor in production
+- Forgetting ExecutorService.shutdown() keeps the JVM alive forever (pool threads aren't daemons by default); post-shutdown submit() throws RejectedExecutionException
+- CompletableFuture: thenApply (transform) vs thenCompose (flatMap, for a step returning its own CompletableFuture) vs thenCombine (merge 2 independent futures); exceptionally recovers with a fallback value
