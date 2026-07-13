@@ -421,3 +421,17 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **PHP:** no equivalent — no shared-heap concurrency model at all in ordinary PHP.
 
 **PHASE 5 COMPLETE** (Modules 21-24: Threads, Synchronization & memory model, Executors & thread pools, Concurrent collections/atomics/locks).
+
+---
+
+## Module 25 — Memory Model & GC
+
+- **Stack** (per-thread, LIFO, auto-reclaimed, holds primitives + object REFERENCES) vs **Heap** (shared, GC-managed, holds all objects) vs **Metaspace** (off-heap class metadata, replaced PermGen, grows until `-XX:MaxMetaspaceSize`).
+- **Verified `StackOverflowError`:** unbounded recursion threw it after **16,118** frames.
+- **Generational hypothesis:** most objects die young. Young gen (Eden+2 Survivor) → frequent, cheap **Minor GC**. Objects surviving enough cycles (age counter) get promoted → Old gen → rare, expensive **Major/Full GC**.
+- **GC algorithms:** Serial (single-thread STW) / Parallel (multi-thread STW, throughput) / **G1 (default since Java 9**, region-based, predictable pauses, mostly concurrent) / ZGC & Shenandoah (sub-millisecond pauses, latency-critical). **Stop-the-world** = app threads pause during some GC phases — even "concurrent" collectors still have (shorter) STW phases.
+- **⭐ A GC prevents nothing — it only reclaims TRULY unreachable objects.** A Java "memory leak" = unintentional reachability, not a different mechanism than C-style leaks in practical effect. Patterns: unbounded static caches (no eviction), unremoved listeners (Module 10 inner-class-leak callback), unclosed resources (Module 20 callback), `ThreadLocal` set-but-never-removed on a POOLED thread (thread outlives the logical request, leaks into the next one).
+- **OOM varieties:** `heap space` (heap exhausted — VERIFIED under `-Xmx32m`, threw after ~30MB), `Metaspace` (too many loaded classes / classloader leak), `GC overhead limit exceeded` (~98%+ time in GC, reclaiming nothing — JVM giving up rather than thrashing forever). `StackOverflowError` is a sibling `Error`, NOT an `OutOfMemoryError`.
+- **⚠️ Genuine accident, kept as a lesson:** an OOM-handling `catch` block that tries to `println` immediately can itself throw a SECOND `OutOfMemoryError` (the println needs to allocate a String, and there's no heap left) — verified this crashed the demo on the first attempt. Fix: release held memory (`holder.clear(); holder=null;`) BEFORE any further allocation in the handler.
+- **Tuning:** `-Xms`/`-Xmx` (heap size), `-XX:+UseG1GC` (collector choice), `-XX:MaxMetaspaceSize`, `-XX:+HeapDumpOnOutOfMemoryError` (auto heap dump on OOM — standard first debugging step).
+- **PHP:** per-request refcounting + cycle collector scopes memory to the request by default — most of these leak patterns (growing static cache, ThreadLocal-on-pooled-thread) have no direct PHP equivalent.

@@ -47,7 +47,7 @@
 - [x] 24. Concurrent collections, atomics & locks — ConcurrentHashMap, BlockingQueue, ReentrantLock, atomics · **[H]**
 
 ### Phase 6 — JVM under the hood · ~3 sessions
-- [ ] 25. Memory model & GC — heap/stack, generations, GC algorithms, memory leaks, OOM, basic tuning · **[H]** · expected for experienced roles
+- [x] 25. Memory model & GC — heap/stack, generations, GC algorithms, memory leaks, OOM, basic tuning · **[H]** · expected for experienced roles
 - [ ] 26. Class loading, reflection & annotations (create + process) · **[M]** · annotations bridge to Spring
 
 ### Phase 7 — Rounding out · ~3 sessions
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 24 — Concurrent collections, atomics & locks (ConcurrentHashMap fine-grained locking + no-null design, check-then-act race measured (75% lost) vs merge() fix, AtomicInteger/CAS verified correct under the same race, BlockingQueue producer-consumer, ReentrantLock tryLock verified blocked/released). **PHASE 5 COMPLETE.**
-- **Next up:** Module 25 — Memory model & GC (heap/stack, generations, GC algorithms, memory leaks, OOM, basic tuning) — start of Phase 6 (JVM under the hood)
-- **Sessions done:** 24
+- **Just finished:** Module 25 — Memory model & GC (heap/stack/Metaspace, StackOverflowError verified at 16,118 frames, generational GC hypothesis, GC algorithm landscape, memory leak patterns despite GC, heap OOM verified under -Xmx32m + the OOM-handler-itself-OOMing lesson, basic tuning flags).
+- **Next up:** Module 26 — Class loading, reflection & annotations (create + process) — annotations bridge to Spring
+- **Sessions done:** 25
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -190,3 +190,7 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - Thread-safe data structure != atomic compound operation — measured manual check-then-act on ConcurrentHashMap lost 75% of updates (24976/100000); map.merge() got exactly 100000
 - Atomics (AtomicInteger etc) use CAS (compare-and-swap, optimistic, lock-free retry) vs synchronized's pessimistic blocking — measured AtomicInteger got exactly 100000 on the same race
 - ReentrantLock adds tryLock/tryLock(timeout)/lockInterruptibly/fairness over synchronized, but requires manual unlock() in finally (synchronized releases automatically) — verified tryLock false while held, true after release
+- Stack (per-thread, LIFO, auto-reclaim, bounded) vs Heap (shared, GC-managed) vs Metaspace (off-heap class metadata, replaced PermGen) — verified StackOverflowError after 16,118 recursive frames
+- Generational hypothesis: young gen (Eden+Survivor) -> frequent cheap Minor GC; old gen (promoted via age counter) -> rare expensive Major/Full GC. G1 = default collector since Java 9
+- A GC only reclaims TRULY unreachable objects — a "memory leak" in Java is unintentional reachability (unbounded static caches, unremoved listeners, ThreadLocal on pooled threads), not a different mechanism than C-style leaks
+- Verified real heap OutOfMemoryError under -Xmx32m; discovered live that an OOM catch-block's own println can throw a SECOND OOM if it allocates before freeing held memory first
