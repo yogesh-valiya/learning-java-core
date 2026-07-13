@@ -25,7 +25,7 @@
 - [x] 10. Nested & anonymous classes · **[M]** · needed to read real code + understand pre-lambda style
 
 ### Phase 2 — Generics & Collections (interview core) · ~5 sessions
-- [ ] 11. Generics — bounded types, wildcards (`? extends`/`? super`), PECS, type erasure · **[H]**
+- [x] 11. Generics — bounded types, wildcards (`? extends`/`? super`), PECS, type erasure · **[H]**
 - [ ] 12. Collections overview — List/Set/Queue/Map hierarchy; ArrayList vs LinkedList · **[H]**
 - [ ] 13. HashMap internals — buckets, hashing, treeify (Java 8), resize, load factor · **[H]** · the #1 internals Q
 - [ ] 14. Set/Map variants — HashSet, LinkedHashMap, TreeMap; when to use which · **[H]**
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 10 — Nested & anonymous classes (static nested vs inner, anonymous/pre-lambda, effectively final, inner-class memory leak). **PHASE 1 COMPLETE.**
-- **Next up:** Module 11 — Generics (bounded types, wildcards `? extends`/`? super`, PECS, type erasure) — start of Phase 2
-- **Sessions done:** 10
+- **Just finished:** Module 11 — Generics (generic classes/methods, bounded types, invariance, wildcards & PECS, type erasure, bridge methods, raw-type gotcha).
+- **Next up:** Module 12 — Collections overview (List/Set/Queue/Map hierarchy; ArrayList vs LinkedList)
+- **Sessions done:** 11
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -112,3 +112,10 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - Static nested (no outer ref) vs inner (hidden outer ref, needs `outer.new Inner()`)
 - Inner class memory leak: pins outer alive → make it `static` if outer not needed
 - Effectively final capture: local = frozen copy; outer field = live read
+- Bounded type param = permission slip (enables method calls), not just a filter; unbounded `<T>` defaults to `<T extends Object>` — that's the bound, not "inference"
+- Invariance: `List<Integer>` is not a `List<Number>` — prevents smuggling a wrong type in via a supertype reference
+- PECS: Producer `extends` (read from it), Consumer `super` (write to it) — `Collections.copy(dest super, src extends)`
+- Type erasure: generics erased at compile time for backward compat; `Box<String>`/`Box<Integer>` share one runtime class
+- Erasure consequences: no `new T()`, no `instanceof List<String>`, no generic arrays, no overload-by-type-param-only, no `T` in `static` context
+- Bridge methods: compiler-generated erased-signature overload preserving polymorphism after overriding a generic method
+- Raw types bypass all checks; the `ClassCastException` fires at the read site (compiler-inserted cast), not where the bad value was stored

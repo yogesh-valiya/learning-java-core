@@ -206,3 +206,32 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **Under the hood:** compiler emits `Outer$Inner.class`, `Outer$1.class` (anonymous). Inner class has a synthetic outer-reference field; static nested does not.
 - **⚠️ Memory-leak gotcha:** inner instance pins its outer alive (can't GC) if it outlives it (long-lived listener/callback/returned Iterator). **Fix: make it `static` if outer isn't needed** (Effective Java: prefer static nested).
 - **PHP:** anonymous classes since PHP 7; closures `function() use($x){}` ≈ capture. No class-in-class/outer binding.
+
+---
+
+## Module 11 — Generics ⭐ high-frequency (Phase 2 opener)
+
+- **No PHP equivalent** — PHPStan/Psalm `@template` is advisory-only, erased at runtime. Genuinely new mechanics.
+- **Why generics:** pre-Java-5 collections stored raw `Object` → manual casts, `ClassCastException` far from the real bug. Generics move the error to **compile time**, at the bad call.
+- **Generic class:** `class Box<T> { T value; ... }`, instantiated as `Box<String>`. **Generic method:** own `<T>` before return type, independent of the class — `T` is **inferred** from the call arg.
+- **Naming convention:** `T` Type, `E` Element, `K`/`V` Key/Value, `N` Number, `R` Return.
+- **Bounded type parameter** (`<T extends Comparable<T>>`): the bound is a **permission slip, not just a filter** — it's what lets the method body call `.compareTo()`. Unbounded `<T>` defaults to `<T extends Object>` (NOT "inferred as Object" — that's a different mechanism/call-site concern; the bound is what's visible in the method body regardless of any call site).
+  - `extends` used for both classes AND interfaces in a bound (no `implements` in generics).
+  - Multiple bounds: `<T extends Comparable<T> & Serializable>` (class first, then interfaces, `&`-joined).
+  - Self-referential bound `<T extends Comparable<T>>` is real JDK pattern — `Enum<E extends Enum<E>>`.
+- **Invariance:** `List<Integer>` is **NOT** a `List<Number>` even though `Integer IS-A Number`. If it were allowed, `List<Number> nums = ints; nums.add(3.14);` would smuggle a `Double` into a real `List<Integer>` — compile-time safety hole. Java just refuses the assignment.
+- **Wildcards:**
+  - `List<? extends Number>` — unknown subtype; read as `Number` ✅, write ❌ (might secretly be `List<Integer>`).
+  - `List<? super Integer>` — unknown supertype; write `Integer` ✅, read only as `Object` ⚠️.
+  - `List<?>` — unknown type; read as `Object` only, write ❌ (except `null`).
+  - `extends` = safe reads/blocked writes; `super` = safe writes/crippled reads. Never both open on one wildcard — by design.
+- **PECS (Producer Extends, Consumer Super):** producer (you read from it) → `extends`; consumer (you write to it) → `super`. Canonical: `Collections.copy(List<? super T> dest, List<? extends T> src)`.
+- **Type erasure:** generics are **compile-time only** — erased from bytecode for **backward compatibility** with pre-Java-5 `.class` files/JVM. Unbounded `T` → `Object`; bounded `<T extends Foo>` → `Foo`. `Box<String>` and `Box<Integer>` are the **same runtime class** (`getClass() ==` → `true`).
+- **Consequences of erasure (frequent gotcha list):**
+  - No `new T()` (no runtime type info).
+  - No `instanceof List<String>` (only `List<?>` / raw `List`).
+  - No `new T[10]` / `new List<String>[10]` (arrays check element type on every store at runtime; generics don't → heap pollution risk).
+  - No overloading `f(List<String>)` vs `f(List<Integer>)` (same erasure = duplicate method, compile error).
+  - No class `T` inside `static` members (static belongs to the class, not a parameterized instance).
+  - **Bridge methods:** compiler auto-generates a synthetic erased-signature overload (e.g. `compareTo(Object)`) so polymorphism survives erasure when you override with a narrower type (`compareTo(MyType)`). Visible via `javap -p`.
+- **Raw types (no `<>`):** opt completely out of generics checking — legal only for backward compat, **never use in new code**. `Box raw = new Box("x"); raw.set(42);` compiles (erasure = `Object` param). Assigning raw → parameterized ref = unchecked warning but compiles. The `ClassCastException` fires **at the read site** (compiler-inserted cast based on the *reference's* declared type), NOT where the bad value was stored — same "failure far from cause" problem generics exist to prevent, snuck back in.
