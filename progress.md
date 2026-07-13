@@ -42,7 +42,7 @@
 
 ### Phase 5 — Concurrency (senior differentiator) · ~6 sessions
 - [x] 21. Threads — lifecycle, Runnable vs Callable, core methods · **[H]**
-- [ ] 22. Synchronization & memory model — synchronized, volatile, race conditions, deadlock, wait/notify · **[H]** · big separator
+- [x] 22. Synchronization & memory model — synchronized, volatile, race conditions, deadlock, wait/notify · **[H]** · big separator
 - [ ] 23. Executors & thread pools — ExecutorService, Future, CompletableFuture, pool types · **[H]**
 - [ ] 24. Concurrent collections, atomics & locks — ConcurrentHashMap, BlockingQueue, ReentrantLock, atomics · **[H]**
 
@@ -73,9 +73,9 @@
 ---
 
 ## Current status
-- **Just finished:** Module 21 — Threads (shared-heap mental shift, Runnable vs extending Thread, start-vs-run gotcha, Callable+FutureTask, lifecycle states, join/sleep/interrupt/daemon).
-- **Next up:** Module 22 — Synchronization & memory model (synchronized, volatile, race conditions, deadlock, wait/notify) — big separator
-- **Sessions done:** 21
+- **Just finished:** Module 22 — Synchronization & memory model (race conditions measured, synchronized fix measured, volatile-visibility-not-atomicity measured, static-vs-instance lock separation proven, deadlock triggered+detected via ThreadMXBean, wait/notify producer-consumer).
+- **Next up:** Module 23 — Executors & thread pools (ExecutorService, Future, CompletableFuture, pool types)
+- **Sessions done:** 22
 
 ## Struggle log
 _Topics that didn't fully click — revisit / spaced repetition._
@@ -176,3 +176,9 @@ _Questions & gotchas the mentor flagged that I want to re-practice._
 - Callable<V> returns a value/can throw checked exceptions; Runnable can't. FutureTask bridges a Callable onto a Thread, .get() retrieves the result
 - Thread lifecycle: NEW -> RUNNABLE -> (BLOCKED/WAITING/TIMED_WAITING) -> TERMINATED; terminated threads can't restart (IllegalThreadStateException)
 - sleep() does NOT release held locks (contrast wait(), which does); interrupt() is cooperative only — no-op on a thread not blocked in an interruptible call unless it checks isInterrupted() itself
+- Race condition measured: 10 threads x 100k increments on a plain int, expected 1M, got ~553k (lost updates) — count++ is 3 non-atomic steps
+- synchronized fixes it exactly (measured 1,000,000/1,000,000); volatile does NOT (measured ~315k, still lost updates) — volatile is visibility only, not atomicity
+- Instance synchronized and static synchronized use DIFFERENT locks (this vs ClassName.class) — proven not to exclude each other
+- Reentrant locks: same thread can re-enter a synchronized block on the same lock without self-deadlocking (per-thread hold count)
+- Deadlock = circular wait; fix = consistent global lock-acquisition order; ThreadMXBean.findDeadlockedThreads() can detect one programmatically
+- wait() releases the monitor (unlike sleep()); ALWAYS guard wait() in a while loop not if — spurious wakeups are real and documented

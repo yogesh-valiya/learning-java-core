@@ -382,3 +382,16 @@ _Concise takeaways for quick revision. One section per module. Skim before inter
 - **`join()`** = caller blocks until target reaches TERMINATED. **`sleep(ms)`** pauses current thread, does **NOT** release held locks (contrast `wait()`, which does — Module 22). **`interrupt()`** = cooperative only — wakes a thread blocked in sleep/wait/join with `InterruptedException` (verified); does NOTHING to a thread running plain code unless it explicitly checks `isInterrupted()`. No forcible kill in Java (`Thread.stop()` deprecated — can corrupt shared state).
 - **Daemon threads** (`setDaemon(true)` before start) don't keep the JVM alive alone.
 - **PHP:** no close equivalent — PHP-FPM workers are separate processes, not shared-heap threads.
+
+---
+
+## Module 22 — Synchronization & Memory Model ⭐ THE big separator
+
+- **Race condition:** `count++` is 3 steps (read/add/write), not atomic. MEASURED: 10 threads × 100k increments, expected 1,000,000 → plain `int` got **553,637** (lost ~45%).
+- **`synchronized`:** locks an object's intrinsic monitor; released even on exception. MEASURED: same race, guarded by `synchronized`, landed at **exactly 1,000,000**.
+- **⚠️ Instance `synchronized` vs `static synchronized` use DIFFERENT locks** (`this` vs `ClassName.class`) — do NOT exclude each other. PROVEN: a thread holding an instance lock (confirmed via CountDownLatch) did not block a `static synchronized` method — it returned in 0ms.
+- **Reentrant:** a thread already holding a lock can re-enter another synchronized block on the SAME lock without self-deadlocking (per-thread hold count). Proven: outer() calling inner(), same object/thread, no issue.
+- **`volatile` = visibility only, NOT atomicity.** MEASURED: the identical race with a `volatile int` STILL lost updates (315,236 vs 1,000,000 expected) — visibility of each read/write doesn't stop interleaving across a compound read-modify-write. Use volatile only for simple independent flags; use synchronized/Atomic* (Module 24) for compound updates.
+- **Deadlock:** circular wait (A holds Lock1 waits Lock2; B holds Lock2 waits Lock1). Fix = consistent GLOBAL lock-acquisition order everywhere. Detected live via `ThreadMXBean.findDeadlockedThreads()` — showed the exact circular ownership (t1 blocked on t2's lock, t2 blocked on t1's lock).
+- **`wait()`/`notify()`/`notifyAll()`:** must be called inside `synchronized` on the SAME object (else `IllegalMonitorStateException`). `wait()` RELEASES the monitor (unlike `sleep()`, which holds all locks). `notify()` wakes one arbitrary thread; `notifyAll()` wakes all (safer default — `notify()` risks starving a legit waiter). **ALWAYS guard `wait()` in a `while` loop, never `if`** — spurious wakeups are real/documented, not hypothetical. Verified with a bounded (cap=3) producer-consumer queue.
+- **PHP:** no analogue at all — no shared mutable heap across simultaneous execution paths in ordinary PHP.
